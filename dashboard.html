@@ -116,12 +116,18 @@
     // Load fields from engine
     const ALL_FIELDS = Object.keys(BookingEngine.FIELDS).map(id => {
       const f = BookingEngine.FIELDS[id];
+      // Map IDs to specific image filenames
+      let imgName = id.split('_')[0];
+      if (id === 'football_5v5') imgName = 'football5';
+      if (id === 'football_6v6') imgName = 'football6';
+      if (id === 'multipurpose') imgName = 'multi';
+      
       return {
         id,
         name: f.name,
         sport: f.sport,
         description: FIELD_DESC[f.sport] || 'ملعب مجهز بالكامل بأفضل المواصفات.',
-        image: `assets/fields/${id.split('_')[0]}.jpg`
+        image: `assets/fields/${imgName}.jpg`
       };
     });
 
