@@ -141,40 +141,26 @@
     let booking = null;
     let playerId = null;
 
-          // ── CHECK LOGIN ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Get params
+      const bookingId = Utils.getParam('booking');
+      playerId = Utils.getParam('player');
+      const token = Utils.getParam('token');
+
+      if (!bookingId || !playerId) {
+        showError();
+        return;
+      }
+
+      // Check Login
       const user = AuthManager.getCurrentUser();
       if (!user) {
-        // Save the full URL so we can redirect back after login
         sessionStorage.setItem('iu_redirect', window.location.href);
-        // Redirect to login page
         window.location.href = 'index.html';
         return;
       }
-      
-      // Removed strict identity check as per user request. 
-      // Any logged-in user can confirm if they have the secure token.
-      
-      // Update nav to show logged-in state>
-        `;
-        // Hide other sections
-        document.querySelector('[style*="padding: var(--space-6); text-align: center"]').style.display = 'none';
-        document.getElementById('bookingDetails').style.display = 'none';
-        document.querySelector('[style*="padding: 0 var(--space-6) var(--space-4)"]').style.display = 'none';
-        document.querySelector('.confirmation-qr').style.display = 'none';
-        return;
-      }
 
-      // Update nav to show logged-in state
-      document.querySelector('.header-nav').innerHTML = `
-        <a href="dashboard.html">الرئيسية</a>
-        <a href="dashboard.html">الملاعب</a>
-        <a href="my-bookings.html">حجوزاتي</a>
-        <a href="#" onclick="AuthManager.logout(); window.location.href='index.html';" class="nav-logout">
-          تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
-        </a>
-      `;
-
-      // Fetch booking from Firebase
+      // Fetch booking
       booking = await BookingEngine.getBookingById(bookingId);
       
       if (!booking) {
@@ -182,13 +168,13 @@
         return;
       }
 
-      // Verify token matches
+      // Verify token
       if (token && booking.token !== token) {
         showError();
         return;
       }
 
-      // Find this player in the booking
+      // Find player
       const player = booking.players.find(p => p.id.toLowerCase() === playerId.toLowerCase());
       if (!player) {
         showError();
@@ -202,17 +188,13 @@
       document.getElementById('loadingState').classList.add('hidden');
       document.getElementById('confirmCard').classList.remove('hidden');
 
-      // Player info
       document.getElementById('playerName').textContent = player.name;
       document.getElementById('playerIdBadge').textContent = player.id;
-      document.getElementById('headerSubtitle').textContent = 
-        `مرحباً ${player.name}، تم دعوتك للمشاركة في هذا الحجز`;
+      document.getElementById('headerSubtitle').textContent = `مرحباً ${player.name}، تم دعوتك للمشاركة في هذا الحجز`;
 
-      // Already confirmed?
       if (player.confirmed) {
         document.getElementById('headerIcon').innerHTML = '<i class="fas fa-check"></i>';
         document.getElementById('headerTitle').textContent = 'تم تأكيد حضورك ✓';
-        document.getElementById('headerSubtitle').textContent = `شكراً ${player.name}! حضورك مؤكد`;
         document.getElementById('actionSection').innerHTML = `
           <div class="alert alert-success">
             <i class="fas fa-check-circle"></i>
@@ -221,12 +203,10 @@
         `;
       }
 
-      // Cancelled?
       if (booking.status === 'cancelled') {
         document.getElementById('cardHeader').style.background = 'linear-gradient(135deg, #c62828, #d32f2f)';
         document.getElementById('headerIcon').innerHTML = '<i class="fas fa-ban"></i>';
         document.getElementById('headerTitle').textContent = 'تم إلغاء الحجز';
-        document.getElementById('headerSubtitle').textContent = 'عذراً، تم إلغاء هذا الحجز';
         document.getElementById('actionSection').innerHTML = `
           <div class="alert alert-danger">
             <i class="fas fa-times-circle"></i>
@@ -235,121 +215,46 @@
         `;
       }
 
-      // Booking details
       document.getElementById('bookingDetails').innerHTML = `
-        <div class="detail-row">
-          <span class="detail-label">الملعب</span>
-          <span class="detail-value">${booking.fieldName}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">نوع اللعبة</span>
-          <span class="detail-value">${booking.sportName || BookingEngine.getSportName(booking.sportType)}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">التاريخ</span>
-          <span class="detail-value">${Utils.formatDate(booking.date)} (${Utils.getDayName(booking.date)})</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">الوقت</span>
-          <span class="detail-value">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">المدة</span>
-          <span class="detail-value">${booking.duration} ساعة</span>
-        </div>
+        <div class="detail-row"><span class="detail-label">الملعب</span><span class="detail-value">${booking.fieldName}</span></div>
+        <div class="detail-row"><span class="detail-label">التاريخ</span><span class="detail-value">${Utils.formatDate(booking.date)}</span></div>
+        <div class="detail-row"><span class="detail-label">الوقت</span><span class="detail-value">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span></div>
       `;
 
-      // All players status
-      const playersHtml = booking.players.map(p => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-3); background: ${p.id.toLowerCase() === playerId.toLowerCase() ? 'rgba(128,0,0,0.05)' : 'var(--color-bg-page-light)'}; border-radius: var(--radius-md); margin-bottom: var(--space-2); ${p.id.toLowerCase() === playerId.toLowerCase() ? 'border: 2px solid var(--color-text-brand);' : ''}">
-          <div style="display: flex; align-items: center; gap: var(--space-2);">
-            ${p.id.toLowerCase() === playerId.toLowerCase() ? '<i class="fas fa-arrow-left" style="color: var(--color-text-brand); font-size: 10px;"></i>' : ''}
-            <span style="font-weight: 600; font-size: var(--font-size-sm);">${p.name}</span>
-            <span style="color: var(--color-text-muted); font-size: var(--font-size-xs);">(${p.id})</span>
-          </div>
-          <span class="badge ${p.confirmed ? 'badge-success' : 'badge-warning'}">
-            ${p.confirmed ? '✓ مؤكد' : '⏳ بانتظار'}
-          </span>
-        </div>
-      `).join('');
-      document.getElementById('allPlayersStatus').innerHTML = playersHtml;
+      renderPlayersStatus();
 
-      // Generate QR code — same verification link for coach
-      const verifyUrl = `${window.location.origin}${window.location.pathname.replace('player-confirm.html', '')}verify.html?token=${encodeURIComponent(booking.token)}`;
-      
+      const verifyUr = `${window.location.origin}${window.location.pathname.replace('player-confirm.html', 'verify.html')}?token=${encodeURIComponent(booking.token)}`;
       try {
-        new QRCode(document.getElementById('qrContainer'), {
-          text: verifyUrl,
-          width: 180,
-          height: 180,
-          colorDark: '#333333',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        new QRCode(document.getElementById('qrContainer'), { text: verifyUr, width: 180, height: 180 });
       } catch(e) {}
     }
 
     async function confirmAttendance() {
-      if (!booking || !playerId) return;
-
       const btn = document.getElementById('confirmBtn');
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التأكيد...';
-
       try {
-        // Update in Firebase
         const success = await BookingEngine.confirmPlayer(booking.bookingId, playerId);
-        
         if (success) {
-          // Refresh booking data
           booking = await BookingEngine.getBookingById(booking.bookingId);
-          const player = booking.players.find(p => p.id.toLowerCase() === playerId.toLowerCase());
-          
-          // Update UI
-          document.getElementById('headerIcon').innerHTML = '<i class="fas fa-check"></i>';
-          document.getElementById('headerTitle').textContent = 'تم تأكيد حضورك ✓';
-          document.getElementById('headerSubtitle').textContent = `شكراً ${player.name}! حضورك مؤكد`;
-
-          document.getElementById('actionSection').innerHTML = `
-            <div class="alert alert-success">
-              <i class="fas fa-check-circle"></i>
-              <div>
-                <strong>تم تأكيد حضورك بنجاح!</strong><br>
-                <small>نراك في الملعب يوم ${Utils.formatDate(booking.date)} الساعة ${Utils.formatTime(booking.startTime)}</small>
-              </div>
-            </div>
-          `;
-
-          // Re-render players to update statuses
-          renderPlayersStatus();
-          
-          Utils.showToast('تم تأكيد حضورك بنجاح ✓', 'success');
-        } else {
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد حضوري';
-          Utils.showToast('فشل في تأكيد الحضور. حاول مرة أخرى.', 'error');
+          renderBooking(booking.players.find(p => p.id.toLowerCase() === playerId.toLowerCase()));
+          Utils.showToast('تم تأكيد الحضور بنجاح ✓', 'success');
         }
       } catch (error) {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد حضوري';
-        Utils.showToast(error.message || 'حدث خطأ. حاول مرة أخرى.', 'error');
+        btn.innerHTML = 'تأكيد حضوري';
+        Utils.showToast(error.message || 'حدث خطأ', 'error');
       }
     }
 
     function renderPlayersStatus() {
-      const playersHtml = booking.players.map(p => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-3); background: ${p.id.toLowerCase() === playerId.toLowerCase() ? 'rgba(76,175,80,0.08)' : 'var(--color-bg-page-light)'}; border-radius: var(--radius-md); margin-bottom: var(--space-2); ${p.id.toLowerCase() === playerId.toLowerCase() ? 'border: 2px solid var(--color-status-verified);' : ''}">
-          <div style="display: flex; align-items: center; gap: var(--space-2);">
-            ${p.id.toLowerCase() === playerId.toLowerCase() ? '<i class="fas fa-arrow-left" style="color: var(--color-status-verified); font-size: 10px;"></i>' : ''}
-            <span style="font-weight: 600; font-size: var(--font-size-sm);">${p.name}</span>
-            <span style="color: var(--color-text-muted); font-size: var(--font-size-xs);">(${p.id})</span>
-          </div>
-          <span class="badge ${p.confirmed ? 'badge-success' : 'badge-warning'}">
-            ${p.confirmed ? '✓ مؤكد' : '⏳ بانتظار'}
-          </span>
+      const html = booking.players.map(p => `
+        <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--color-bg-page-light); border-radius: 8px; margin-bottom: 5px;">
+          <span>${p.name} (${p.id})</span>
+          <span class="badge ${p.confirmed ? 'badge-success' : 'badge-warning'}">${p.confirmed ? 'مؤكد' : 'بانتظار'}</span>
         </div>
       `).join('');
-      document.getElementById('allPlayersStatus').innerHTML = playersHtml;
+      document.getElementById('allPlayersStatus').innerHTML = html;
     }
 
     function showError() {
