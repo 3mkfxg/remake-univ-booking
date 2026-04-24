@@ -1,0 +1,131 @@
+/* ============================================================
+   Isra University Booking System — Design Tokens
+   Extracted from: app.iu.edu.jo/stb/
+   ============================================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --color-brand-primary: #800000;       /* IU Maroon */
+  --color-brand-primary-dark: #5c0000;
+  --color-brand-primary-light: #a33333;
+  
+  /* ── Action Colors ── */
+  --color-action-primary: #388e3c;      /* Green buttons */
+  --color-action-primary-hover: #2e7d32;
+  --color-action-primary-light: #4caf50;
+  --color-action-danger: #d32f2f;
+  --color-action-danger-hover: #b71c1c;
+  --color-action-warning: #f57c00;
+  --color-action-info: #1976d2;
+  
+  /* ── Background Colors ── */
+  --color-bg-page: #e8ecef;
+  --color-bg-page-light: #f5f7fa;
+  --color-bg-card: #ffffff;
+  --color-bg-header: #ffffff;
+  --color-bg-footer: rgb(163, 156, 156);
+  --color-bg-modal-overlay: rgba(0, 0, 0, 0.5);
+  --color-bg-input: #ffffff;
+  --color-bg-input-focus: #fafffe;
+  
+  /* ── Text Colors ── */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-text-inverse: #ffffff;
+  --color-text-brand: #800000;
+  --color-text-action: #388e3c;
+  --color-text-link: #1976d2;
+  
+  /* ── Border Colors ── */
+  --color-border-light: #dee2e6;
+  --color-border-medium: #ced4da;
+  --color-border-input: #cccccc;
+  --color-border-input-focus: #4caf50;
+  --color-border-card: rgba(0, 0, 0, 0.08);
+  
+  /* ── Status Colors ── */
+  --color-status-available: #4caf50;
+  --color-status-booked: #ef5350;
+  --color-status-your-booking: #ffc107;
+  --color-status-pending: #ff9800;
+  --color-status-verified: #2e7d32;
+  --color-status-unverified: #c62828;
+  
+  /* ── Typography ── */
+  --font-primary: 'Poppins', 'Cairo', 'Tahoma', sans-serif;
+  --font-arabic: 'Cairo', 'Tahoma', 'Arial', sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+  
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-md: 1.125rem;    /* 18px */
+  --font-size-lg: 1.25rem;     /* 20px */
+  --font-size-xl: 1.5rem;      /* 24px */
+  --font-size-2xl: 1.875rem;   /* 30px */
+  --font-size-3xl: 2.25rem;    /* 36px */
+  --font-size-4xl: 3rem;       /* 48px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* ── Spacing ── */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  
+  /* ── Border Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 50%;
+  --radius-pill: 9999px;
+  
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.15);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.3);
+  
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* ── Z-Index Scale ── */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-overlay: 400;
+  --z-modal: 500;
+  --z-tooltip: 600;
+  --z-toast: 700;
+  
+  /* ── Layout ── */
+  --header-height: 70px;
+  --footer-height: 60px;
+  --container-max: 1200px;
+  --container-narrow: 800px;
+  --sidebar-width: 280px;
+}

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="حجز ملعب - نظام حجز ملاعب جامعة الإسراء">
+  <title>حجز ملعب | نظام حجز الملاعب</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Header ── -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html">الرئيسية</a>
+          <a href="dashboard.html">الملاعب</a>
+          <a href="my-bookings.html">حجوزاتي</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main class="page-content">
+      <div class="booking-layout">
+        <!-- Calendar & Time Slots -->
+        <div class="booking-calendar-section">
+          <h2 class="text-brand mb-6">
+            <i class="fas fa-calendar-alt"></i>
+            اختر تاريخ ووقت الحجز
+          </h2>
+          
+          <!-- Calendar -->
+          <div class="calendar" id="calendarContainer">
+            <div class="calendar-header">
+              <h3 id="calendarMonth"></h3>
+              <div class="calendar-nav">
+                <button id="prevMonth" aria-label="الشهر السابق">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+                <button id="nextMonth" aria-label="الشهر التالي">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+              <!-- Day headers -->
+              <div class="calendar-day-header">أحد</div>
+              <div class="calendar-day-header">إثن</div>
+              <div class="calendar-day-header">ثلث</div>
+              <div class="calendar-day-header">أربع</div>
+              <div class="calendar-day-header">خمس</div>
+              <div class="calendar-day-header">جمعة</div>
+              <div class="calendar-day-header">سبت</div>
+            </div>
+          </div>
+
+          <!-- Time Slots (shown after selecting date) -->
+          <div class="timeslots-section hidden" id="timeSlotsSection">
+            <div class="divider"></div>
+            <h3 class="mb-4">
+              <i class="fas fa-clock"></i>
+              اختر الوقت — <span id="selectedDateDisplay"></span>
+            </h3>
+            <div class="flex gap-4 mb-4" style="flex-wrap: wrap;">
+              <div class="flex gap-2" style="align-items: center;">
+                <span style="width:14px; height:14px; border-radius:3px; border: 2px solid var(--color-status-available); display:inline-block;"></span>
+                <small>متاح</small>
+              </div>
+              <div class="flex gap-2" style="align-items: center;">
+                <span style="width:14px; height:14px; border-radius:3px; background: rgba(239,83,80,0.1); border: 2px solid var(--color-status-booked); display:inline-block;"></span>
+                <small>محجوز</small>
+              </div>
+              <div class="flex gap-2" style="align-items: center;">
+                <span style="width:14px; height:14px; border-radius:3px; background: var(--color-action-primary); display:inline-block;"></span>
+                <small>اختيارك</small>
+              </div>
+            </div>
+            <div class="timeslots-grid" id="timeSlotsGrid"></div>
+          </div>
+        </div>
+
+        <!-- Booking Sidebar -->
+        <div class="booking-sidebar">
+          <!-- Field Info -->
+          <div class="booking-field-info">
+            <img id="fieldImage" src="" alt="">
+            <div>
+              <div class="booking-field-name" id="fieldName">—</div>
+              <div class="booking-field-sport" id="fieldSport">—</div>
+            </div>
+          </div>
+
+          <!-- Quota -->
+          <div class="quota-indicator mb-4">
+            <div style="width: 100%;">
+              <div class="flex-between mb-2">
+                <span style="font-size: var(--font-size-xs); font-weight: 600;" id="quotaLabel">الحصة اليومية</span>
+                <span class="quota-text" id="quotaText">0/1</span>
+              </div>
+              <div class="quota-bar">
+                <div class="quota-bar-fill" id="quotaFill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Player Entry Section (hidden until time selected) -->
+          <div class="hidden" id="playerSection">
+            <div class="divider"></div>
+            <div class="player-entry">
+              <div class="player-entry-header">
+                <h3 style="font-size: var(--font-size-md); margin-bottom: 0;">
+                  <i class="fas fa-users"></i> اللاعبون
+                </h3>
+                <span class="player-count badge badge-info" id="playerCountBadge">0/0</span>
+              </div>
+              <p class="form-help mb-4" id="playerHelp">أدخل أرقام الطلاب الجامعية للاعبين</p>
+              <div id="playerFields"></div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary" id="bookingSummary" style="display: none;">
+              <h4 style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-text-brand);">
+                <i class="fas fa-receipt"></i> ملخص الحجز
+              </h4>
+              <div class="booking-summary-row">
+                <span>الملعب</span>
+                <span id="summaryField">—</span>
+              </div>
+              <div class="booking-summary-row">
+                <span>التاريخ</span>
+                <span id="summaryDate">—</span>
+              </div>
+              <div class="booking-summary-row">
+                <span>الوقت</span>
+                <span id="summaryTime">—</span>
+              </div>
+              <div class="booking-summary-row">
+                <span>المدة</span>
+                <span id="summaryDuration">—</span>
+              </div>
+              <div class="booking-summary-row" id="extraCostRow" style="display: none;">
+                <span>تكلفة إضافية</span>
+                <span class="text-danger" id="summaryExtraCost">—</span>
+              </div>
+              <div class="booking-summary-row booking-summary-total">
+                <span>الحالة</span>
+                <span class="text-success" id="summaryStatus">جاهز للحجز</span>
+              </div>
+            </div>
+
+            <!-- Book Button -->
+            <button class="btn btn-primary btn-block btn-lg mt-4" id="confirmBookingBtn" disabled>
+              <i class="fas fa-check-circle"></i>
+              تأكيد الحجز
+            </button>
+          </div>
+
+          <!-- Initial Prompt -->
+          <div class="empty-state" id="initialPrompt">
+            <div class="empty-state-icon">📅</div>
+            <p class="empty-state-text">اختر تاريخاً ووقتاً</p>
+            <p class="text-muted" style="font-size: var(--font-size-xs);">حدد التاريخ من التقويم ثم اختر الفترة الزمنية المناسبة</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="site-footer">
+      <div class="footer-copyright">جميع الحقوق محفوظة مركز الحاسوب © 2025</div>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>جاري التحميل...</p>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Cancel Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>تأكيد الحجز</h2>
+      </div>
+      <div class="modal-body" id="confirmModalBody">
+        <p>هل أنت متأكد من الحجز؟</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="confirmModalCancel">إلغاء</button>
+        <button class="btn btn-primary" id="confirmModalOk">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/email.js"></script>
+  <script>
+    // ── State ──
+    let currentField = null;
+    let selectedDate = null;
+    let selectedSlots = [];
+    let playerData = [];
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let currentUser = null;
+
+    // ── Field images mapping ──
+    const FIELD_IMAGES = {
+      padel_a: 'assets/fields/padel.jpg',
+      padel_b: 'assets/fields/padel.jpg',
+      padel_c: 'assets/fields/padel.jpg',
+      padel_d: 'assets/fields/padel.jpg',
+      football_5v5: 'assets/fields/football5.jpg',
+      football_6v6: 'assets/fields/football6.jpg',
+      squash_a: 'assets/fields/squash.jpg',
+      squash_b: 'assets/fields/squash.jpg',
+      multipurpose: 'assets/fields/multi.jpg',
+      beach: 'assets/fields/beach.jpg'
+    };
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      currentUser = AuthManager.requireAuth();
+      if (!currentUser) return;
+
+      // Get field from URL
+      const fieldId = Utils.getParam('field');
+      if (!fieldId || !BookingEngine.FIELDS[fieldId]) {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      currentField = { id: fieldId, ...BookingEngine.FIELDS[fieldId] };
+      
+      // Update field info
+      document.getElementById('fieldName').textContent = currentField.name;
+      document.getElementById('fieldSport').textContent = BookingEngine.getSportName(currentField.sport);
+      document.getElementById('fieldImage').src = FIELD_IMAGES[fieldId] || 'assets/fields/placeholder.jpg';
+      document.title = `حجز ${currentField.name} | نظام حجز الملاعب`;
+
+      // Update quota
+      updateQuota();
+      
+      // Render calendar
+      renderCalendar();
+      
+      // Setup events
+      setupEventListeners();
+    });
+
+    async function updateQuota(date) {
+      const limit = AuthManager.getDailyLimit(currentUser.role);
+      let used = 0;
+      try { 
+        used = await BookingEngine.getUsedHoursOnDate(currentUser.uid, date || Utils.today()); 
+      } catch {}
+      
+      const quotaLabel = document.getElementById('quotaLabel');
+      const quotaText = document.getElementById('quotaText');
+      const quotaFill = document.getElementById('quotaFill');
+      
+      if (limit === Infinity) {
+        quotaLabel.textContent = 'حساب غير محدود';
+        quotaText.textContent = '∞';
+        quotaFill.style.width = '0%';
+        quotaFill.className = 'quota-bar-fill';
+        return;
+      }
+      
+      if (used >= limit) {
+        quotaText.textContent = `تم استهلاك الحصة لهذا اليوم (${used}/${limit})`;
+        quotaFill.style.width = '100%';
+        quotaFill.className = 'quota-bar-fill full';
+      } else {
+        quotaText.textContent = `${used}/${limit} ساعة`;
+        const pct = (used / limit) * 100;
+        quotaFill.style.width = pct + '%';
+        quotaFill.className = pct >= 70 ? 'quota-bar-fill warning' : 'quota-bar-fill';
+      }
+    }
+
+    // ── Calendar ──
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      
+      // Clear old days (keep headers)
+      const headers = grid.querySelectorAll('.calendar-day-header');
+      grid.innerHTML = '';
+      headers.forEach(h => grid.appendChild(h));
+
+      // Update month title
+      const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      document.getElementById('calendarMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      // Empty cells
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        grid.appendChild(empty);
+      }
+
+      // Day cells
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(currentYear, currentMonth, day);
+        const dateStr = `${currentYear}-${(currentMonth+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+        
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+        cell.textContent = day;
+        cell.dataset.date = dateStr;
+        
+        if (dateObj < today) {
+          cell.classList.add('disabled');
+        } else {
+          cell.addEventListener('click', () => selectDate(dateStr, cell));
+        }
+        
+        if (dateObj.toDateString() === today.toDateString()) {
+          cell.classList.add('today');
+        }
+        
+        if (selectedDate === dateStr) {
+          cell.classList.add('selected');
+        }
+        
+        grid.appendChild(cell);
+      }
+    }
+
+    async function selectDate(dateStr, cell) {
+      selectedDate = dateStr;
+      selectedSlots = [];
+      
+      // Update UI
+      document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+      cell.classList.add('selected');
+      
+      document.getElementById('selectedDateDisplay').textContent = Utils.formatDate(dateStr);
+      document.getElementById('timeSlotsSection').classList.remove('hidden');
+      
+      // Update quota for the selected date
+      await updateQuota(dateStr);
+      
+      // Load time slots
+      await renderTimeSlots(dateStr);
+    }
+
+    async function renderTimeSlots(date) {
+      const grid = document.getElementById('timeSlotsGrid');
+      grid.innerHTML = '<div class="text-center" style="grid-column: 1/-1;"><div class="spinner spinner-sm" style="margin:auto;"></div></div>';
+
+      const slots = Utils.generateTimeSlots(currentField.open, currentField.close);
+      const existingBookings = await BookingEngine.getFieldBookings(currentField.id, date);
+
+      grid.innerHTML = '';
+      
+      for (const slot of slots) {
+        const div = document.createElement('div');
+        div.className = 'timeslot';
+        div.textContent = slot.display;
+        div.dataset.start = slot.startTime;
+        div.dataset.end = slot.endTime;
+        
+        // Check if booked
+        const isBooked = existingBookings.some(b => 
+          BookingEngine._timesOverlap(slot.startTime, slot.endTime, b.startTime, b.endTime)
+        );
+        
+        // Check if past
+        const isPast = Utils.isPast(date, slot.startTime);
+        
+        if (isBooked) {
+          div.classList.add('booked');
+          div.title = 'محجوز';
+        } else if (isPast) {
+          div.classList.add('booked');
+          div.title = 'انتهى الوقت';
+        } else {
+          div.classList.add('available');
+          div.addEventListener('click', () => toggleSlot(div, slot));
+        }
+        
+        // Check if it's selected
+        if (selectedSlots.find(s => s.startTime === slot.startTime)) {
+          div.classList.add('selected');
+          div.classList.remove('available');
+        }
+        
+        grid.appendChild(div);
+      }
+    }
+
+    function toggleSlot(element, slot) {
+      const isSelected = selectedSlots.find(s => s.startTime === slot.startTime);
+      
+      // Clear all previous selections
+      document.querySelectorAll('.timeslot.selected').forEach(el => {
+        el.classList.remove('selected');
+        el.classList.add('available');
+      });
+      selectedSlots = [];
+
+      if (!isSelected) {
+        // Select new slot
+        selectedSlots = [slot];
+        element.classList.add('selected');
+        element.classList.remove('available');
+      }
+      
+      updateSidebar();
+    }
+
+    function updateSidebar() {
+      const hasSlots = selectedSlots.length > 0;
+      
+      document.getElementById('playerSection').classList.toggle('hidden', !hasSlots);
+      document.getElementById('initialPrompt').classList.toggle('hidden', hasSlots);
+      
+      if (hasSlots) {
+        const duration = selectedSlots.length;
+        const startTime = selectedSlots[0].startTime;
+        const endTime = selectedSlots[selectedSlots.length - 1].endTime;
+        
+        // Update summary
+        document.getElementById('bookingSummary').style.display = '';
+        document.getElementById('summaryField').textContent = currentField.name;
+        document.getElementById('summaryDate').textContent = Utils.formatDate(selectedDate);
+        document.getElementById('summaryTime').textContent = `${Utils.formatTime(startTime)} - ${Utils.formatTime(endTime)}`;
+        document.getElementById('summaryDuration').textContent = `${duration} ساعة`;
+        
+        // Extra cost
+        const extraHours = Math.max(0, duration - 1);
+        if (extraHours > 0) {
+          document.getElementById('extraCostRow').style.display = '';
+          document.getElementById('summaryExtraCost').textContent = `${extraHours * 2} د.أ`;
+        } else {
+          document.getElementById('extraCostRow').style.display = 'none';
+        }
+        
+        // Render player fields
+        renderPlayerFields();
+      }
+    }
+
+    function renderPlayerFields() {
+      const container = document.getElementById('playerFields');
+      const required = currentField.players;
+      
+      document.getElementById('playerCountBadge').textContent = `${currentField.players} لاعب`;
+      document.getElementById('playerHelp').textContent = `أدخل أرقام الطلاب الجامعية لـ ${required} لاعب`;
+      
+      // Preserve existing values
+      const existingValues = [];
+      container.querySelectorAll('.player-id-input').forEach(input => {
+        existingValues.push(input.value);
+      });
+
+      container.innerHTML = '';
+      
+      for (let i = 0; i < required; i++) {
+        const row = document.createElement('div');
+        row.className = 'player-row';
+        
+        const label = document.createElement('span');
+        label.style.cssText = 'min-width:24px; font-size: var(--font-size-xs); color: var(--color-text-muted);';
+        label.textContent = `${i + 1}.`;
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-input player-id-input';
+        input.placeholder = `رقم اللاعب ${i + 1}`;
+        input.dataset.index = i;
+        input.value = existingValues[i] || (i === 0 ? currentUser.uid : '');
+        if (i === 0) input.readOnly = true; // First player = booker
+        
+        input.addEventListener('input', Utils.debounce(() => validatePlayer(input, i), 500));
+        
+        const status = document.createElement('span');
+        status.className = 'player-status';
+        status.id = `playerStatus${i}`;
+        
+        // Pre-validate first player
+        if (i === 0) {
+          status.className = 'player-status valid';
+          status.innerHTML = '<i class="fas fa-check-circle"></i>';
+        }
+        
+        row.appendChild(label);
+        row.appendChild(input);
+        row.appendChild(status);
+        container.appendChild(row);
+      }
+      
+      checkAllPlayersValid();
+    }
+
+    async function validatePlayer(input, index) {
+      const statusEl = document.getElementById(`playerStatus${index}`);
+      const playerId = input.value.trim().toLowerCase();
+      
+      if (!playerId) {
+        statusEl.className = 'player-status';
+        statusEl.innerHTML = '';
+        input.classList.remove('error');
+        checkAllPlayersValid();
+        return;
+      }
+
+      // Check format
+      if (!Utils.isValidStudentId(playerId)) {
+        statusEl.className = 'player-status invalid';
+        statusEl.innerHTML = '<i class="fas fa-times-circle" title="رقم طالب غير صحيح"></i>';
+        input.classList.add('error');
+        checkAllPlayersValid();
+        return;
+      }
+
+      // Check duplicate in current form
+      const allInputs = document.querySelectorAll('.player-id-input');
+      let duplicateFound = false;
+      allInputs.forEach((inp, idx) => {
+        if (idx !== index && inp.value.trim().toLowerCase() === playerId) {
+          duplicateFound = true;
+        }
+      });
+      
+      if (duplicateFound) {
+        statusEl.className = 'player-status invalid';
+        statusEl.innerHTML = '<i class="fas fa-times-circle" title="رقم مكرر"></i>';
+        input.classList.add('error');
+        checkAllPlayersValid();
+        return;
+      }
+
+      // Check if user exists
+      const user = await AuthManager.getUserById(playerId);
+      if (!user) {
+        statusEl.className = 'player-status invalid';
+        statusEl.innerHTML = '<i class="fas fa-question-circle" title="رقم طالب غير مسجل"></i>';
+        input.classList.add('error');
+        checkAllPlayersValid();
+        return;
+      }
+
+      // Check conflicts for selected time
+      if (selectedDate && selectedSlots.length > 0) {
+        const startTime = selectedSlots[0].startTime;
+        const endTime = selectedSlots[selectedSlots.length - 1].endTime;
+        const conflict = await BookingEngine.checkPlayerConflict(playerId, selectedDate, startTime, endTime);
+        
+        if (conflict) {
+          statusEl.className = 'player-status invalid';
+          statusEl.innerHTML = `<i class="fas fa-exclamation-triangle" title="لديه حجز في ${conflict.fieldName}"></i>`;
+          input.classList.add('error');
+          Utils.showToast(`${user.name} لديه حجز في ${conflict.fieldName} في نفس الوقت`, 'error');
+          checkAllPlayersValid();
+          return;
+        }
+      }
+
+      // Valid
+      statusEl.className = 'player-status valid';
+      statusEl.innerHTML = `<i class="fas fa-check-circle" title="${user.name}"></i>`;
+      input.classList.remove('error');
+      input.title = user.name;
+      checkAllPlayersValid();
+    }
+
+    function checkAllPlayersValid() {
+      const allValid = document.querySelectorAll('.player-status.valid').length === currentField.players;
+      const btn = document.getElementById('confirmBookingBtn');
+      btn.disabled = !allValid || selectedSlots.length === 0;
+    }
+
+    // ── Event Listeners ──
+    function setupEventListeners() {
+      // Menu toggle
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+
+      // Logout
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = 'index.html';
+      });
+
+      // Calendar navigation
+      document.getElementById('prevMonth')?.addEventListener('click', () => {
+        currentMonth--;
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        renderCalendar();
+      });
+
+      document.getElementById('nextMonth')?.addEventListener('click', () => {
+        currentMonth++;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar();
+      });
+
+      // Confirm booking button
+      document.getElementById('confirmBookingBtn')?.addEventListener('click', () => {
+        showConfirmModal();
+      });
+
+      // Modal buttons
+      document.getElementById('confirmModalCancel')?.addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.remove('active');
+      });
+
+      document.getElementById('confirmModalOk')?.addEventListener('click', async () => {
+        document.getElementById('confirmModal').classList.remove('active');
+        await submitBooking();
+      });
+    }
+
+    function showConfirmModal() {
+      const modal = document.getElementById('confirmModal');
+      const body = document.getElementById('confirmModalBody');
+      const duration = selectedSlots.length;
+      const extraHours = Math.max(0, duration - 1);
+      
+      let html = `
+        <p><strong>الملعب:</strong> ${currentField.name}</p>
+        <p><strong>التاريخ:</strong> ${Utils.formatDate(selectedDate)}</p>
+        <p><strong>الوقت:</strong> ${Utils.formatTime(selectedSlots[0].startTime)} - ${Utils.formatTime(selectedSlots[selectedSlots.length - 1].endTime)}</p>
+        <p><strong>المدة:</strong> ${duration} ساعة</p>
+      `;
+      
+      if (extraHours > 0) {
+        html += `<div class="alert alert-warning mt-4">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>تكلفة إضافية: ${extraHours * 2} د.أ (${extraHours} ساعة × 2 د.أ)</span>
+        </div>`;
+      }
+      
+      html += '<p class="mt-4">هل تريد تأكيد هذا الحجز؟</p>';
+      body.innerHTML = html;
+      modal.classList.add('active');
+    }
+
+    async function submitBooking() {
+      Utils.showLoading('جاري تأكيد الحجز...');
+      
+      try {
+        // Collect player data
+        const players = [];
+        const inputs = document.querySelectorAll('.player-id-input');
+        
+        for (const input of inputs) {
+          const pid = input.value.trim().toLowerCase();
+          const user = await AuthManager.getUserById(pid);
+          players.push({
+            id: pid,
+            name: user ? user.name : pid,
+            email: user ? user.email : `${pid}@iu.edu.jo`
+          });
+        }
+
+        const duration = selectedSlots.length;
+        const startTime = selectedSlots[0].startTime;
+        const endTime = selectedSlots[selectedSlots.length - 1].endTime;
+
+        const booking = await BookingEngine.createBooking({
+          fieldId: currentField.id,
+          date: selectedDate,
+          startTime,
+          endTime,
+          duration,
+          bookedBy: currentUser.uid,
+          players
+        });
+
+        // Send confirmation emails
+        try {
+          await EmailService.sendBookingConfirmation(booking);
+        } catch (emailErr) {
+          console.warn('Email sending failed:', emailErr);
+        }
+
+        Utils.hideLoading();
+        
+        // Redirect to confirmation page
+        window.location.href = `confirmation.html?id=${booking.bookingId}`;
+        
+      } catch (error) {
+        Utils.hideLoading();
+        Utils.showToast(error.message || 'فشل في إنشاء الحجز', 'error', 5000);
+      }
+    }
+  </script>
+</body>
+</html>

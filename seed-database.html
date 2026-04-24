@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Seeder - IU Booking</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', sans-serif; 
+      background: #1a1a2e; 
+      color: #eee; 
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 20px;
+    }
+    .container { 
+      max-width: 700px; 
+      width: 100%; 
+      background: #16213e; 
+      border-radius: 16px; 
+      padding: 40px; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    h1 { 
+      text-align: center; 
+      margin-bottom: 8px; 
+      font-size: 24px;
+      color: #e94560;
+    }
+    p.sub { 
+      text-align: center; 
+      color: #888; 
+      margin-bottom: 30px; 
+      font-size: 14px;
+    }
+    .status { 
+      background: #0f3460; 
+      border-radius: 10px; 
+      padding: 16px; 
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.8;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .status .ok { color: #4caf50; }
+    .status .err { color: #ef5350; }
+    .status .info { color: #42a5f5; }
+    .status .warn { color: #ffa726; }
+    button { 
+      width: 100%; 
+      padding: 14px; 
+      border: none; 
+      border-radius: 10px; 
+      font-size: 16px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      margin-bottom: 10px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: #e94560; color: white; }
+    .btn-secondary { background: #533483; color: white; }
+    .btn-success { background: #2e7d32; color: white; }
+    .done { 
+      text-align: center; 
+      padding: 20px; 
+      background: rgba(46,125,50,0.2); 
+      border-radius: 10px; 
+      border: 1px solid #2e7d32;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>IU Booking - Database Seeder</h1>
+    <p class="sub">This will create all user accounts and initial data in your Firebase database</p>
+    
+    <div class="status" id="log">
+      <div class="info">Ready to seed database. Click a button below to start.</div>
+    </div>
+
+    <button class="btn-primary" id="seedUsersBtn" onclick="seedUsers()">
+      1. Seed User Accounts (14 users)
+    </button>
+    
+    <button class="btn-secondary" id="seedFieldsBtn" onclick="seedFields()">
+      2. Seed Field/Stadium Data (10 fields)
+    </button>
+
+    <button class="btn-success" id="seedAllBtn" onclick="seedAll()">
+      Seed Everything At Once
+    </button>
+
+    <div class="done" id="doneMsg" style="display:none;">
+      <strong>Database is ready!</strong><br>
+      <small>You can now open index.html and login.</small>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs (compat version for script tags) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    const logEl = document.getElementById('log');
+
+    function log(msg, type = 'info') {
+      logEl.innerHTML += `<div class="${type}">${msg}</div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function hashPassword(password) {
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return 'h_' + Math.abs(hash).toString(36) + '_' + password.length;
+    }
+
+    // ── Users Data ──
+    const USERS = [
+      { uid: 'ah2041', name: 'أحمد حسين', email: 'ah2041@iu.edu.jo', password: 'VERTEBRA@80', role: 'vip' },
+      { uid: 'admin01', name: 'مدير النظام', email: 'admin@iu.edu.jo', password: 'Admin@2025', role: 'admin' },
+      { uid: 'coach01', name: 'المدرب أحمد', email: 'coach01@iu.edu.jo', password: 'Coach@2025', role: 'coach' },
+      { uid: 'tp1001', name: 'خالد المعاني', email: 'tp1001@iu.edu.jo', password: 'Player@2025', role: 'tournament' },
+      { uid: 'st2001', name: 'سامي العبادي', email: 'st2001@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2002', name: 'يوسف الحمد', email: 'st2002@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2003', name: 'محمد الراشد', email: 'st2003@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2004', name: 'عمر خليل', email: 'st2004@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2005', name: 'فارس النابلسي', email: 'st2005@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2006', name: 'كريم الزعبي', email: 'st2006@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2007', name: 'ناصر العجلوني', email: 'st2007@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2008', name: 'بلال محمود', email: 'st2008@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2009', name: 'رامي حسن', email: 'st2009@iu.edu.jo', password: 'Student@2025', role: 'student' },
+      { uid: 'st2010', name: 'طارق سعيد', email: 'st2010@iu.edu.jo', password: 'Student@2025', role: 'student' },
+    ];
+
+    // ── Fields Data ──
+    const FIELDS = [
+      { id: 'padel_a', name: 'ملعب البادل A', sport: 'padel', players: 4, open: '08:00', close: '16:00', isActive: true },
+      { id: 'padel_b', name: 'ملعب البادل B', sport: 'padel', players: 4, open: '08:00', close: '16:00', isActive: true },
+      { id: 'padel_c', name: 'ملعب البادل C', sport: 'padel', players: 4, open: '08:00', close: '16:00', isActive: true },
+      { id: 'padel_d', name: 'ملعب البادل D', sport: 'padel', players: 4, open: '08:00', close: '16:00', isActive: true },
+      { id: 'football_5v5', name: 'ملعب كرة القدم الخماسي', sport: 'football', players: 10, open: '08:00', close: '16:00', isActive: true },
+      { id: 'football_6v6', name: 'ملعب كرة القدم السداسي', sport: 'football', players: 12, open: '08:00', close: '16:00', isActive: true },
+      { id: 'squash_a', name: 'ملعب سكواتش A', sport: 'squash', players: 2, open: '08:00', close: '16:00', isActive: true },
+      { id: 'squash_b', name: 'ملعب سكواتش B', sport: 'squash', players: 2, open: '08:00', close: '16:00', isActive: true },
+      { id: 'multipurpose', name: 'ملعب متعدد الاستخدام', sport: 'multi', players: 10, open: '08:00', close: '16:00', isActive: true },
+      { id: 'beach', name: 'ملعب شاطئي', sport: 'beach', players: 8, open: '08:00', close: '16:00', isActive: true },
+    ];
+
+    // ── Seed Users ──
+    async function seedUsers() {
+      const btn = document.getElementById('seedUsersBtn');
+      btn.disabled = true;
+      log('--- Seeding Users ---', 'warn');
+
+      for (const user of USERS) {
+        try {
+          await db.collection('users').doc(user.uid).set({
+            uid: user.uid,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            passwordHash: hashPassword(user.password),
+            isActive: true,
+            createdAt: new Date().toISOString()
+          });
+          log(`✅ ${user.uid} — ${user.name} (${user.role})`, 'ok');
+        } catch (err) {
+          log(`❌ ${user.uid} — ${err.message}`, 'err');
+        }
+      }
+
+      log('--- Users Done! ---', 'warn');
+      btn.textContent = '✓ Users Seeded';
+    }
+
+    // ── Seed Fields ──
+    async function seedFields() {
+      const btn = document.getElementById('seedFieldsBtn');
+      btn.disabled = true;
+      log('--- Seeding Fields ---', 'warn');
+
+      for (const field of FIELDS) {
+        try {
+          await db.collection('fields').doc(field.id).set({
+            ...field,
+            createdAt: new Date().toISOString()
+          });
+          log(`✅ ${field.id} — ${field.name}`, 'ok');
+        } catch (err) {
+          log(`❌ ${field.id} — ${err.message}`, 'err');
+        }
+      }
+
+      log('--- Fields Done! ---', 'warn');
+      btn.textContent = '✓ Fields Seeded';
+    }
+
+    // ── Seed Everything ──
+    async function seedAll() {
+      const btn = document.getElementById('seedAllBtn');
+      btn.disabled = true;
+      
+      await seedUsers();
+      await seedFields();
+      
+      log('', 'info');
+      log('🎉 DATABASE FULLY SEEDED!', 'ok');
+      log('You can now open index.html and login with:', 'info');
+      log('  VIP: ah2041 / VERTEBRA@80', 'info');
+      log('  Admin: admin01 / Admin@2025', 'info');
+      log('  Student: st2001 / Student@2025', 'info');
+      
+      document.getElementById('doneMsg').style.display = 'block';
+      btn.textContent = '✓ All Done!';
+    }
+  </script>
+</body>
+</html>

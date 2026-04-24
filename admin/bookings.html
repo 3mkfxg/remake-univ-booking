@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الحجوزات | إدارة النظام</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="../assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء — إدارة النظام</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html">لوحة التحكم</a>
+          <a href="users.html">المستخدمون</a>
+          <a href="bookings.html" class="active">الحجوزات</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="container">
+        <h1 class="section-title">إدارة الحجوزات</h1>
+
+        <!-- Filters -->
+        <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-6); justify-content: center;">
+          <select class="form-select" id="filterStatus" style="max-width: 150px;">
+            <option value="all">جميع الحالات</option>
+            <option value="active">نشط</option>
+            <option value="cancelled">ملغي</option>
+          </select>
+          <input type="date" class="form-input" id="filterDate" style="max-width: 200px;">
+          <input type="text" class="form-input" id="filterSearch" placeholder="بحث بالملعب أو اللاعب..." style="max-width: 250px;">
+        </div>
+
+        <!-- Bookings Table -->
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: var(--space-6);">
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>رقم الحجز</th>
+                  <th>الملعب</th>
+                  <th>التاريخ</th>
+                  <th>الوقت</th>
+                  <th>الحاجز</th>
+                  <th>اللاعبون</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsBody">
+                <tr><td colspan="8" class="text-center text-muted" style="padding: var(--space-8);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="cancelModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 style="color: var(--color-action-danger);">إلغاء الحجز</h2>
+      </div>
+      <div class="modal-body">
+        <p>هل تريد إلغاء هذا الحجز؟</p>
+        <p class="text-muted" style="font-size: var(--font-size-sm);">هذا الإجراء كمدير يتجاوز قاعدة الـ 6 ساعات.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('cancelModal').classList.remove('active')">تراجع</button>
+        <button class="btn btn-danger" id="adminCancelBtn">إلغاء الحجز</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/booking.js"></script>
+  <script>
+    let allBookings = [];
+    let cancelTarget = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = AuthManager.getCurrentUser();
+      if (!user || (user.role !== 'admin' && user.role !== 'vip')) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = '../index.html';
+      });
+
+      allBookings = await BookingEngine.getAllBookings();
+      renderBookings(allBookings);
+
+      // Filters
+      document.getElementById('filterStatus').addEventListener('change', applyFilters);
+      document.getElementById('filterDate').addEventListener('change', applyFilters);
+      document.getElementById('filterSearch').addEventListener('input', Utils.debounce(applyFilters, 300));
+
+      // Admin cancel
+      document.getElementById('adminCancelBtn').addEventListener('click', async () => {
+        if (!cancelTarget) return;
+        
+        // Admin override — direct cancel without 6-hour check
+        if (isFirebaseConfigured()) {
+          await db.collection(Collections.BOOKINGS).doc(cancelTarget).update({
+            status: 'cancelled',
+            cancelledAt: new Date().toISOString()
+          });
+        } else {
+          BookingEngine._loadLocalBookings();
+          const b = BookingEngine._demoBookings.find(x => x.bookingId === cancelTarget);
+          if (b) {
+            b.status = 'cancelled';
+            b.cancelledAt = new Date().toISOString();
+            Utils.saveLocal('bookings', BookingEngine._demoBookings);
+          }
+        }
+
+        document.getElementById('cancelModal').classList.remove('active');
+        Utils.showToast('تم إلغاء الحجز بنجاح', 'success');
+        
+        allBookings = await BookingEngine.getAllBookings();
+        applyFilters();
+        cancelTarget = null;
+      });
+    });
+
+    function applyFilters() {
+      let filtered = [...allBookings];
+      
+      const status = document.getElementById('filterStatus').value;
+      if (status !== 'all') filtered = filtered.filter(b => b.status === status);
+      
+      const date = document.getElementById('filterDate').value;
+      if (date) filtered = filtered.filter(b => b.date === date);
+      
+      const search = document.getElementById('filterSearch').value.trim().toLowerCase();
+      if (search) {
+        filtered = filtered.filter(b => 
+          b.fieldName.includes(search) || 
+          b.bookedBy.includes(search) ||
+          b.players.some(p => p.name.includes(search) || p.id.includes(search))
+        );
+      }
+      
+      renderBookings(filtered);
+    }
+
+    function renderBookings(bookings) {
+      const tbody = document.getElementById('bookingsBody');
+      
+      if (bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">لا توجد حجوزات</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = bookings.map(b => `
+        <tr>
+          <td style="font-size: var(--font-size-xs);">${b.bookingId}</td>
+          <td>${b.fieldName}</td>
+          <td>${Utils.formatDate(b.date)}</td>
+          <td style="white-space: nowrap;">${Utils.formatTime(b.startTime)} - ${Utils.formatTime(b.endTime)}</td>
+          <td>${b.bookedBy}</td>
+          <td style="font-size: var(--font-size-xs);">${b.players.map(p => p.name).join(', ')}</td>
+          <td><span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">${b.status === 'active' ? 'نشط' : 'ملغي'}</span></td>
+          <td>
+            '—'
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function promptCancel(bookingId) {
+      cancelTarget = bookingId;
+      document.getElementById('cancelModal').classList.add('active');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المستخدمين | إدارة النظام</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="../assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء — إدارة النظام</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html">لوحة التحكم</a>
+          <a href="users.html" class="active">المستخدمون</a>
+          <a href="bookings.html">الحجوزات</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="container">
+        <h1 class="section-title">إدارة المستخدمين</h1>
+
+        <!-- Search -->
+        <div style="max-width: 400px; margin: 0 auto var(--space-6);">
+          <div class="form-group" style="margin-bottom: 0;">
+            <input type="text" class="form-input" id="searchInput" placeholder="بحث بالاسم أو رقم الطالب...">
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: var(--space-6);">
+          <div class="table-wrapper">
+            <table class="table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>رقم الطالب</th>
+                  <th>الاسم</th>
+                  <th>البريد</th>
+                  <th>الدور الحالي</th>
+                  <th>تغيير الدور</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody">
+                <tr><td colspan="5" class="text-center text-muted" style="padding: var(--space-8);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    let allUsers = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = AuthManager.getCurrentUser();
+      if (!user || (user.role !== 'admin' && user.role !== 'vip')) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = '../index.html';
+      });
+
+      allUsers = await AuthManager.getAllUsers();
+      renderUsers(allUsers);
+
+      // Search
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        const filtered = allUsers.filter(u => 
+          u.uid.includes(q) || u.name.includes(q) || (u.email && u.email.includes(q))
+        );
+        renderUsers(filtered);
+      });
+    });
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersBody');
+      
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">لا توجد نتائج</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => `
+        <tr data-uid="${u.uid}">
+          <td><strong>${u.uid}</strong></td>
+          <td>${u.name}</td>
+          <td style="font-size: var(--font-size-xs);">${u.email || '—'}</td>
+          <td><span class="badge ${AuthManager.getRoleBadge(u.role)}">${AuthManager.getRoleName(u.role)}</span></td>
+          <td>
+            <select class="form-select" style="max-width: 150px; padding: var(--space-1) var(--space-2); font-size: var(--font-size-xs);" 
+                    onchange="changeRole('${u.uid}', this.value)" ${u.role === 'vip' ? 'disabled' : ''}>
+              <option value="student" ${u.role === 'student' ? 'selected' : ''}>طالب</option>
+              <option value="tournament" ${u.role === 'tournament' ? 'selected' : ''}>لاعب بطولات</option>
+              <option value="coach" ${u.role === 'coach' ? 'selected' : ''}>مدرب</option>
+              <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>مدير</option>
+              ${u.role === 'vip' ? '<option value="vip" selected>VIP</option>' : ''}
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function changeRole(userId, newRole) {
+      const success = await AuthManager.updateUserRole(userId, newRole);
+      if (success) {
+        Utils.showToast(`تم تحديث دور ${userId} إلى ${AuthManager.getRoleName(newRole)}`, 'success');
+        // Update local data
+        const user = allUsers.find(u => u.uid === userId);
+        if (user) user.role = newRole;
+        renderUsers(allUsers);
+      } else {
+        Utils.showToast('فشل في تحديث الدور', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

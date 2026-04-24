@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="التحقق من الحجز - نظام حجز ملاعب جامعة الإسراء">
+  <title>التحقق من الحجز | جامعة الإسراء</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="header-logo">
+          <img src="assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء</span>
+        </a>
+        <nav class="header-nav">
+          <span style="color: var(--color-text-muted);">صفحة التحقق من الحجز</span>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="verify-container">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center">
+          <div class="spinner" style="margin: var(--space-8) auto;"></div>
+          <p>جاري التحقق من الحجز...</p>
+        </div>
+
+        <!-- Verification Card -->
+        <div class="verify-card hidden" id="verifyCard">
+          <!-- Status Header -->
+          <div class="verify-status" id="verifyStatus">
+            <div class="verify-status-icon" id="statusIcon"></div>
+            <h2 id="statusTitle"></h2>
+            <p id="statusMessage"></p>
+          </div>
+
+          <!-- Booking Details -->
+          <div class="verify-details" id="verifyDetails"></div>
+
+          <!-- Players -->
+          <div style="padding: 0 var(--space-6) var(--space-6);">
+            <h3 style="font-size: var(--font-size-md); margin-bottom: var(--space-3);">
+              <i class="fas fa-users"></i> اللاعبون
+            </h3>
+            <div id="verifyPlayers"></div>
+          </div>
+
+          <!-- Timestamp -->
+          <div style="padding: var(--space-4) var(--space-6); background: var(--color-bg-page-light); text-align: center;">
+            <small class="text-muted" id="verifyTimestamp"></small>
+            <br>
+            <button onclick="refreshBooking()" style="margin-top: var(--space-2); background: var(--color-brand); color: white; border: none; padding: 8px 20px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; font-size: var(--font-size-sm);">
+              <i class="fas fa-sync-alt"></i> تحديث حالة اللاعبين
+            </button>
+            <p style="margin-top: var(--space-2); font-size: 11px; color: var(--color-text-muted);">
+              يتم التحديث تلقائياً كل 15 ثانية
+            </p>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div class="hidden" id="errorState">
+          <div class="cancel-card">
+            <div class="cancel-icon">
+              <i class="fas fa-search"></i>
+            </div>
+            <h2 class="text-brand mb-4">حجز غير موجود</h2>
+            <p class="text-muted">رمز التحقق غير صالح أو تم حذف الحجز</p>
+            <p class="text-muted" style="font-size: var(--font-size-sm); margin-top: var(--space-2);">
+              تأكد من مسح رمز QR الصحيح أو تواصل مع إدارة الملاعب
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-copyright">جميع الحقوق محفوظة مركز الحاسوب © 2025</div>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/booking.js"></script>
+  <script>
+    let currentToken = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      currentToken = Utils.getParam('token');
+      
+      if (!currentToken) {
+        showError();
+        return;
+      }
+
+      // ALWAYS fetch live data from database — this prevents faking
+      const booking = await BookingEngine.getBookingByToken(currentToken);
+      
+      if (!booking) {
+        showError();
+        return;
+      }
+
+      showVerification(booking);
+
+      // Auto-refresh every 15 seconds so coach sees live confirmation updates
+      setInterval(refreshBooking, 15000);
+    });
+
+    async function refreshBooking() {
+      if (!currentToken) return;
+      const booking = await BookingEngine.getBookingByToken(currentToken);
+      if (booking) {
+        showVerification(booking);
+      }
+    }
+
+    function showVerification(booking) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('verifyCard').classList.remove('hidden');
+
+      const statusDiv = document.getElementById('verifyStatus');
+      const statusIcon = document.getElementById('statusIcon');
+      const statusTitle = document.getElementById('statusTitle');
+      const statusMessage = document.getElementById('statusMessage');
+
+      // Check overall confirmation status
+      const allConfirmed = booking.players.every(p => p.confirmed);
+      const anyConfirmed = booking.players.some(p => p.confirmed);
+      const isCancelled = booking.status === 'cancelled';
+
+      if (isCancelled) {
+        statusDiv.className = 'verify-status unverified';
+        statusIcon.innerHTML = '<i class="fas fa-ban"></i>';
+        statusTitle.textContent = 'تم إلغاء الحجز';
+        statusMessage.textContent = 'هذا الحجز تم إلغاؤه';
+      } else if (allConfirmed) {
+        statusDiv.className = 'verify-status verified';
+        statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+        statusTitle.textContent = 'تم التأكيد ✓';
+        statusMessage.textContent = 'جميع اللاعبين أكدوا حضورهم';
+      } else if (anyConfirmed) {
+        statusDiv.className = 'verify-status';
+        statusDiv.style.background = 'linear-gradient(135deg, #f57c00, #ff9800)';
+        statusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+        statusTitle.textContent = 'تأكيد جزئي';
+        statusMessage.textContent = 'بعض اللاعبين لم يؤكدوا حضورهم بعد';
+      } else {
+        statusDiv.className = 'verify-status unverified';
+        statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+        statusTitle.textContent = 'لم يتم التأكيد ✗';
+        statusMessage.textContent = 'لم يقم أي لاعب بتأكيد حضوره';
+      }
+
+      // Details
+      const details = document.getElementById('verifyDetails');
+      details.innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">الملعب</span>
+          <span class="detail-value">${booking.fieldName}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">نوع اللعبة</span>
+          <span class="detail-value">${booking.sportName || BookingEngine.getSportName(booking.sportType)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">التاريخ</span>
+          <span class="detail-value">${Utils.formatDate(booking.date)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">الوقت</span>
+          <span class="detail-value">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">الحالة</span>
+          <span class="detail-value">
+            <span class="badge ${booking.status === 'active' ? 'badge-success' : 'badge-danger'}">
+              ${booking.status === 'active' ? 'نشط' : 'ملغي'}
+            </span>
+          </span>
+        </div>
+      `;
+
+      // Players
+      const playersList = document.getElementById('verifyPlayers');
+      playersList.innerHTML = booking.players.map(p => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border-light);">
+          <div>
+            <strong style="font-size: var(--font-size-sm);">${p.name}</strong>
+            <small class="text-muted" style="margin-right: var(--space-2);">(${p.id})</small>
+          </div>
+          <span class="badge ${p.confirmed ? 'badge-success' : 'badge-danger'}">
+            ${p.confirmed ? '✓ مؤكد' : '✗ غير مؤكد'}
+          </span>
+        </div>
+      `).join('');
+
+      // Timestamp
+      document.getElementById('verifyTimestamp').textContent = 
+        `آخر تحديث: ${new Date().toLocaleString('ar-JO')}`;
+    }
+
+    function showError() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

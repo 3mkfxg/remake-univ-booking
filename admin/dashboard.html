@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | إدارة النظام</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="../assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء — إدارة النظام</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html" class="active">لوحة التحكم</a>
+          <a href="users.html">المستخدمون</a>
+          <a href="bookings.html">الحجوزات</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="container">
+        <h1 class="section-title">لوحة التحكم</h1>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-number" id="totalBookings">0</div>
+            <div class="stat-label">إجمالي الحجوزات</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="activeBookings">0</div>
+            <div class="stat-label">حجوزات نشطة</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalUsers">0</div>
+            <div class="stat-label">المستخدمون</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="todayBookings">0</div>
+            <div class="stat-label">حجوزات اليوم</div>
+          </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: var(--space-6);">
+          <h2 style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);">
+            <i class="fas fa-clock"></i> آخر الحجوزات
+          </h2>
+          <div class="table-wrapper">
+            <table class="table" id="recentBookingsTable">
+              <thead>
+                <tr>
+                  <th>الملعب</th>
+                  <th>التاريخ</th>
+                  <th>الوقت</th>
+                  <th>الحاجز</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="recentBookingsBody">
+                <tr><td colspan="5" class="text-center text-muted" style="padding: var(--space-8);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/booking.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = AuthManager.getCurrentUser();
+      if (!user || (user.role !== 'admin' && user.role !== 'vip')) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = '../index.html';
+      });
+
+      // Load stats
+      const allBookings = await BookingEngine.getAllBookings();
+      const allUsers = await AuthManager.getAllUsers();
+      const today = Utils.today();
+
+      document.getElementById('totalBookings').textContent = allBookings.length;
+      document.getElementById('activeBookings').textContent = allBookings.filter(b => b.status === 'active').length;
+      document.getElementById('totalUsers').textContent = allUsers.length;
+      document.getElementById('todayBookings').textContent = allBookings.filter(b => b.date === today && b.status === 'active').length;
+
+      // Recent bookings table
+      const tbody = document.getElementById('recentBookingsBody');
+      const recent = allBookings.slice(0, 10);
+      
+      if (recent.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding: var(--space-8);">لا توجد حجوزات</td></tr>';
+      } else {
+        tbody.innerHTML = recent.map(b => `
+          <tr>
+            <td>${b.fieldName}</td>
+            <td>${Utils.formatDate(b.date)}</td>
+            <td>${Utils.formatTime(b.startTime)} - ${Utils.formatTime(b.endTime)}</td>
+            <td>${b.bookedBy}</td>
+            <td><span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">${b.status === 'active' ? 'نشط' : 'ملغي'}</span></td>
+          </tr>
+        `).join('');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="تأكيد الحجز - نظام حجز ملاعب جامعة الإسراء">
+  <title>تأكيد الحجز | نظام حجز الملاعب</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html">الرئيسية</a>
+          <a href="dashboard.html">الملاعب</a>
+          <a href="my-bookings.html">حجوزاتي</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="confirmation-container">
+        <div class="confirmation-card" id="confirmationCard">
+          <!-- Header -->
+          <div class="confirmation-header">
+            <div class="check-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <h2>تم تأكيد الحجز بنجاح!</h2>
+            <p style="color: rgba(255,255,255,0.8); margin-top: var(--space-2);" id="bookingIdDisplay"></p>
+          </div>
+
+          <!-- Details -->
+          <div class="confirmation-details" id="confirmationDetails">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Players List -->
+          <div style="padding: 0 var(--space-6);">
+            <h3 style="font-size: var(--font-size-md); margin-bottom: var(--space-3);">
+              <i class="fas fa-users"></i> اللاعبون
+            </h3>
+            <div id="playersList"></div>
+          </div>
+
+          <!-- Email Status & Player Links -->
+          <div style="padding: 0 var(--space-6) var(--space-4);" id="emailStatusSection" class="hidden"></div>
+
+          <!-- QR Code -->
+          <div class="confirmation-qr">
+            <h3 style="font-size: var(--font-size-md); margin-bottom: var(--space-4);">
+              <i class="fas fa-qrcode"></i> رمز QR للتحقق
+            </h3>
+            <div class="qr-container no-select" id="qrContainer">
+              <!-- QR will be generated here -->
+            </div>
+            <p>يقوم المدرب بمسح هذا الرمز للتحقق من حجزك يوم المباراة</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="confirmation-actions">
+            <button class="btn btn-primary btn-block" id="confirmAttendBtn">
+              <i class="fas fa-check-circle"></i>
+              تأكيد الحضور
+            </button>
+
+            <a href="dashboard.html" class="btn btn-secondary btn-block">
+              <i class="fas fa-arrow-right"></i>
+              العودة للملاعب
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-copyright">جميع الحقوق محفوظة مركز الحاسوب © 2025</div>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+      </div>
+    </footer>
+  </div>
+
+
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>جاري التحميل...</p>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- QR Code Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/email.js"></script>
+  <script>
+    let currentBooking = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = AuthManager.getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const bookingId = Utils.getParam('id');
+      if (!bookingId) {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      Utils.showLoading('جاري تحميل بيانات الحجز...');
+
+      currentBooking = await BookingEngine.getBookingById(bookingId);
+      if (!currentBooking) {
+        Utils.hideLoading();
+        document.getElementById('confirmationCard').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">❌</div>
+            <p class="empty-state-text">الحجز غير موجود</p>
+            <a href="dashboard.html" class="btn btn-primary mt-4">العودة للملاعب</a>
+          </div>
+        `;
+        return;
+      }
+
+      generateQRCode();
+      setupEvents();
+      Utils.hideLoading();
+      await renderBookingDetails();
+    });
+
+    async function renderBookingDetails() {
+      const b = currentBooking;
+      
+      document.getElementById('bookingIdDisplay').textContent = `رقم الحجز: ${b.bookingId}`;
+      
+      const details = document.getElementById('confirmationDetails');
+      details.innerHTML = `
+        <div class="detail-row">
+          <span class="detail-label">الملعب</span>
+          <span class="detail-value">${b.fieldName}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">نوع اللعبة</span>
+          <span class="detail-value">${b.sportName || BookingEngine.getSportName(b.sportType)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">التاريخ</span>
+          <span class="detail-value">${Utils.formatDate(b.date)} (${Utils.getDayName(b.date)})</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">الوقت</span>
+          <span class="detail-value">${Utils.formatTime(b.startTime)} - ${Utils.formatTime(b.endTime)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">المدة</span>
+          <span class="detail-value">${b.duration} ساعة</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">الحالة</span>
+          <span class="detail-value">
+            <span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">
+              ${b.status === 'active' ? 'نشط' : 'ملغي'}
+            </span>
+          </span>
+        </div>
+        ${b.extraCost > 0 ? `
+        <div class="detail-row">
+          <span class="detail-label">تكلفة إضافية</span>
+          <span class="detail-value text-danger">${Utils.formatCurrency(b.extraCost)}</span>
+        </div>
+        ` : ''}
+      `;
+
+      // Players list — clean, no links shown
+      const playersList = document.getElementById('playersList');
+      playersList.innerHTML = b.players.map((p, i) => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-3); background: ${i % 2 === 0 ? 'var(--color-bg-page-light)' : 'white'}; border-radius: var(--radius-md); margin-bottom: var(--space-2);">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <span style="font-weight: 600; font-size: var(--font-size-sm);">${p.name}</span>
+            <span style="color: var(--color-text-muted); font-size: var(--font-size-xs);">(${p.id})</span>
+          </div>
+          <span class="badge ${p.confirmed ? 'badge-success' : 'badge-warning'}">
+            ${p.confirmed ? '✓ مؤكد' : '⏳ بانتظار'}
+          </span>
+        </div>
+      `).join('');
+
+      // Email section — send emails and show status
+      const emailSection = document.getElementById('emailStatusSection');
+      if (emailSection && !emailSection.dataset.sent) {
+        // PERMANENT FIX: Check database flag to avoid duplicates on refresh
+        if (b.emailsSent) {
+          emailSection.classList.remove('hidden');
+          emailSection.innerHTML = `
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              <span>تم إرسال دعوات الحجز مسبقاً لجميع اللاعبين ✅</span>
+            </div>
+          `;
+          return;
+        }
+
+        emailSection.dataset.sent = 'true';
+        emailSection.classList.remove('hidden');
+        
+        if (EmailService.isConfigured()) {
+          // Show "sending" state
+          emailSection.innerHTML = `
+            <div class="alert alert-info">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>جاري إرسال البريد الإلكتروني لجميع اللاعبين...</span>
+            </div>
+          `;
+          
+          // Send emails
+          const result = await EmailService.sendBookingEmails(b);
+          
+          if (result.sent > 0) {
+            // Update Firestore so refreshing doesn't send again
+            try {
+              await firebase.firestore().collection('bookings').doc(b.bookingId).update({
+                emailsSent: true
+              });
+            } catch (updErr) { console.error('Failed to update email flag:', updErr); }
+
+            emailSection.innerHTML = `
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                  <strong>تم إرسال دعوات الحجز بنجاح!</strong><br>
+                  <small>تم إرسال ${result.sent} بريد إلكتروني من أصل ${result.total} لاعب</small>
+                </div>
+              </div>
+            `;
+          } else {
+            emailSection.innerHTML = `
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <strong>تعذر إرسال البريد الإلكتروني</strong><br>
+                  <small>تأكد من إعدادات EmailJS وحاول مرة أخرى</small>
+                </div>
+              </div>
+            `;
+          }
+        } else {
+          emailSection.innerHTML = `
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <div>
+                <strong>تم إنشاء الحجز بنجاح!</strong><br>
+                <small>لم يتم ربط خدمة البريد الإلكتروني بعد. سيتم إرسال الدعوات تلقائياً بعد إعداد EmailJS.</small>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Hide cancel/confirm buttons if cancelled
+      if (b.status === 'cancelled') {
+        document.getElementById('cancelBookingBtn').style.display = 'none';
+        document.getElementById('confirmAttendBtn').style.display = 'none';
+        document.querySelector('.confirmation-header').style.background = 
+          'linear-gradient(135deg, #c62828, #d32f2f)';
+        document.querySelector('.confirmation-header h2').textContent = 'تم إلغاء الحجز';
+        document.querySelector('.check-icon').innerHTML = '<i class="fas fa-times"></i>';
+      }
+    }
+
+    function generateQRCode() {
+      if (!currentBooking) return;
+      
+      const container = document.getElementById('qrContainer');
+      container.innerHTML = '';
+      
+      // QR links to verification page with the booking token
+      const verifyUrl = `${window.location.origin}${window.location.pathname.replace('confirmation.html', '')}verify.html?token=${encodeURIComponent(currentBooking.token)}`;
+      
+      new QRCode(container, {
+        text: verifyUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#333333',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function setupEvents() {
+      // Menu
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+
+      // Logout
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = 'index.html';
+      });
+
+      // Confirm attendance
+      document.getElementById('confirmAttendBtn')?.addEventListener('click', async () => {
+        const user = AuthManager.getCurrentUser();
+        if (!user) return;
+        
+        Utils.showLoading('جاري تأكيد الحضور...');
+        const success = await BookingEngine.confirmPlayer(currentBooking.bookingId, user.uid);
+        Utils.hideLoading();
+        
+        if (success) {
+          Utils.showToast('تم تأكيد حضورك بنجاح ✓', 'success');
+          // Refresh data
+          currentBooking = await BookingEngine.getBookingById(currentBooking.bookingId);
+          renderBookingDetails();
+        } else {
+          Utils.showToast('فشل في تأكيد الحضور', 'error');
+        }
+      });
+
+
+    }
+  </script>
+</body>
+</html>

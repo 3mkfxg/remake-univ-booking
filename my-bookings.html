@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حجوزاتي | نظام حجز الملاعب</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <style>
+    .booking-list {
+      display: grid;
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+    
+    .booking-item {
+      background: var(--color-bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      transition: all 0.2s;
+    }
+    
+    .booking-item:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary-light);
+    }
+    
+    .booking-info {
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+    }
+    
+    .booking-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--color-bg-page-light);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+      font-size: 1.5rem;
+    }
+    
+    .booking-details h3 {
+      font-size: var(--font-size-md);
+      margin-bottom: 2px;
+    }
+    
+    .booking-meta {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      display: flex;
+      gap: var(--space-3);
+    }
+    
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-pending { background: #fff3e0; color: #ef6c00; }
+    .status-active { background: #e8f5e9; color: #2e7d32; }
+    
+    .section-header {
+      margin-top: var(--space-8);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: 2px solid var(--color-bg-page-light);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: var(--space-10);
+      background: var(--color-bg-page-light);
+      border-radius: var(--radius-xl);
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="dashboard.html" class="header-logo">
+          <img src="assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="dashboard.html">الرئيسية</a>
+          <a href="dashboard.html">الملاعب</a>
+          <a href="my-bookings.html" class="active">حجوزاتي</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="container container-sm">
+        <h1 class="section-title">إدارة حجوزاتك</h1>
+
+        <div id="pendingSection">
+          <div class="section-header">
+            <i class="fas fa-clock text-warning"></i>
+            <h2>حجوزات بانتظار تأكيدك</h2>
+          </div>
+          <div class="booking-list" id="pendingList">
+            <div class="text-center py-4"><div class="spinner spinner-sm"></div></div>
+          </div>
+        </div>
+
+        <div id="upcomingSection">
+          <div class="section-header">
+            <i class="fas fa-calendar-check text-primary"></i>
+            <h2>حجوزاتي القادمة</h2>
+          </div>
+          <div class="booking-list" id="upcomingList">
+            <div class="text-center py-4"><div class="spinner spinner-sm"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-copyright">جميع الحقوق محفوظة مركز الحاسوب © 2025</div>
+    </footer>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/booking.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = AuthManager.requireAuth();
+      if (!user) return;
+
+      setupUI();
+      await loadBookings(user.uid);
+    });
+
+    function setupUI() {
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = 'index.html';
+      });
+    }
+
+    async function loadBookings(uid) {
+      const bookings = await BookingEngine.getUserBookings(uid);
+      
+      const pendingList = document.getElementById('pendingList');
+      const upcomingList = document.getElementById('upcomingList');
+      
+      const pendingCount = bookings.filter(b => {
+        const p = b.players.find(x => x.id.toLowerCase() === uid.toLowerCase());
+        return p && !p.confirmed;
+      });
+      
+      const upcomingCount = bookings.filter(b => {
+        const p = b.players.find(x => x.id.toLowerCase() === uid.toLowerCase());
+        return b.bookedBy.toLowerCase() === uid.toLowerCase() || (p && p.confirmed);
+      });
+
+      // Render Pending
+      if (pendingCount.length === 0) {
+        pendingList.innerHTML = '<div class="empty-state">لا توجد دعوات بانتظار التأكيد حالياً</div>';
+      } else {
+        pendingList.innerHTML = pendingCount.map(b => renderBookingItem(b, true, uid)).join('');
+      }
+
+      // Render Upcoming
+      if (upcomingCount.length === 0) {
+        upcomingList.innerHTML = '<div class="empty-state">لا توجد حجوزات قادمة</div>';
+      } else {
+        upcomingList.innerHTML = upcomingCount.map(b => renderBookingItem(b, false, uid)).join('');
+      }
+    }
+
+    function renderBookingItem(b, isPending, uid) {
+      const sportIcon = {
+        padel: 'fa-table-tennis-paddle-ball',
+        football: 'fa-futbol',
+        squash: 'fa-quidditch-marshals',
+        multi: 'fa-basketball',
+        beach: 'fa-umbrella-beach'
+      }[b.fieldSport] || 'fa-medal';
+
+      return `
+        <div class="booking-item">
+          <div class="booking-info">
+            <div class="booking-icon">
+              <i class="fas ${sportIcon}"></i>
+            </div>
+            <div class="booking-details">
+              <h3>${b.fieldName}</h3>
+              <div class="booking-meta">
+                <span><i class="far fa-calendar-alt"></i> ${Utils.formatDate(b.date)}</span>
+                <span><i class="far fa-clock"></i> ${Utils.formatTime(b.startTime)}</span>
+                <span class="status-badge ${b.status === 'active' ? 'status-active' : 'status-pending'}">
+                  ${b.status === 'active' ? 'مؤكد' : 'بانتظار التأكيد'}
+                </span>
+              </div>
+              <div style="font-size: 10px; color: var(--color-text-muted); margin-top: 4px;">رقم الحجز: ${b.bookingId}</div>
+            </div>
+          </div>
+          <div class="booking-actions">
+            ${isPending ? `
+              <a href="player-confirm.html?booking=${b.bookingId}&player=${uid}&token=${encodeURIComponent(b.token)}" class="btn btn-primary btn-sm">
+                تأكيد الآن <i class="fas fa-check"></i>
+              </a>
+            ` : `
+              <a href="confirmation.html?id=${b.bookingId}" class="btn btn-secondary btn-sm">
+                التفاصيل <i class="fas fa-info-circle"></i>
+              </a>
+            `}
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

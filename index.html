@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="نظام حجز الملاعب - جامعة الإسراء | احجز ملعبك الرياضي المفضل بسهولة">
+  <meta name="robots" content="noindex, nofollow">
+  <title>نظام حجز الملاعب - تسجيل الدخول | جامعة الإسراء</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+  
+  <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- ── Header ── -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="index.html" class="header-logo">
+          <img src="assets/logo.png" alt="جامعة الإسراء" id="header-logo-img">
+          <span class="header-logo-text">جامعة الإسـراء</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="index.html" class="active">الرئيسية</a>
+          <a href="dashboard.html">الملاعب</a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main class="page-content">
+      <div class="login-wrapper">
+        <div class="login-card">
+          <!-- Logo Section -->
+          <div class="login-logo">
+            <img src="assets/logo.png" alt="جامعة الإسراء" id="login-logo-img">
+            <h1>نظام حجز الملاعب - تسجيل الدخول</h1>
+          </div>
+
+          <div class="login-card-inner">
+            <!-- Form Section -->
+            <div class="login-form-section">
+              <h2 class="text-center text-brand mb-6" style="font-size: var(--font-size-lg);">تسجيل الدخول إلى حسابك</h2>
+              
+              <form id="loginForm" autocomplete="off">
+                <!-- Student ID -->
+                <div class="form-group">
+                  <label class="form-label" for="studentId">رقم الطالب الجامعي:</label>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    id="studentId" 
+                    name="studentId"
+                    placeholder="أدخل رقم الطالب الجامعي"
+                    required
+                    autocomplete="username"
+                  >
+                  <div class="form-error" id="studentIdError">يرجى إدخال رقم الطالب الجامعي</div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                  <label class="form-label" for="password">كلمة المرور:</label>
+                  <input 
+                    type="password" 
+                    class="form-input" 
+                    id="password" 
+                    name="password"
+                    placeholder="أدخل كلمة المرور"
+                    required
+                    autocomplete="current-password"
+                  >
+                  <div class="form-error" id="passwordError">يرجى إدخال كلمة المرور</div>
+                </div>
+
+                <!-- Terms Checkbox -->
+                <div class="form-group">
+                  <label class="form-check">
+                    <input type="checkbox" id="agreeTerms">
+                    <span class="form-check-label">الرجاء قراءة التعليمات والموافقة عليها لإتمام عملية الدخول</span>
+                  </label>
+                  <div class="form-error" id="termsError">يجب الموافقة على التعليمات والشروط</div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+                  <i class="fas fa-sign-in-alt"></i>
+                  تسجيل الدخول
+                </button>
+
+                <!-- Login Error -->
+                <div class="alert alert-danger mt-4 hidden" id="loginError">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span id="loginErrorText">رقم الطالب أو كلمة المرور غير صحيحة</span>
+                </div>
+              </form>
+            </div>
+
+            <!-- Image Section -->
+            <div class="login-image-section">
+              <img src="assets/fields/field_hero.jpg" alt="ملعب جامعة الإسراء" id="login-field-img">
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="site-footer">
+      <div class="footer-copyright">
+        جميع الحقوق محفوظة مركز الحاسوب © 2025
+      </div>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener" aria-label="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ── Terms Modal ── -->
+  <div class="modal-overlay" id="termsModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <img src="assets/logo.png" alt="جامعة الإسراء">
+        <h2>تعليمات استخدام الملاعب – جامعة الاسراء</h2>
+      </div>
+      <div class="modal-body" id="termsContent">
+        <p>ترحب جامعة الاسراء بأبنائها الطلبة في ملاعبها ومرافقها الرياضية، وتؤكد على ضرورة الالتزام بالتعليمات التالية لضمان بيئة آمنة ومنظمة للجميع:</p>
+        
+        <h3>أولاً: الحجز والدخول</h3>
+        <ol>
+          <li>يجب حجز الملعب مسبقاً قبل الموعد المطلوب بـ 48 ساعة على الأقل.</li>
+          <li>الالتزام بالوقت المحدد للحجز أمر الزامي، ويعتبر الحجز لاغي تلقائيا في حال تأخر الفريق أو الطالب لأكثر من 15 دقيقة دون إشعار مسبق.</li>
+          <li>يسمح بالدخول إلى الملعب فقط للطلبة الذين يرتدون اللباس والحذاء الرياضي المناسب.</li>
+        </ol>
+
+        <h3>ثانياً: الاستخدام والسلوك</h3>
+        <ol start="4">
+          <li>يمنع منعا باتا ادخال الطعام أو الشراب الى أرضية الملعب.</li>
+          <li>التدخين بجميع أشكاله ممنوع نهائيا داخل الملاعب والمرافق التابعة لها.</li>
+          <li>يمنع القيام بأي تصرفات سلبية مثل الهتافات المسيئة، رمي الأشياء، أو اثارة الفوضى داخل الملعب.</li>
+          <li>على جميع الطلبة الالتزام بتعليمات موظفي الأمن الجامعي والعاملين في النشاط الرياضي.</li>
+        </ol>
+
+        <h3>ثالثاً: الحفاظ على المرافق</h3>
+        <ol start="8">
+          <li>يجب استخدام المرافق والمعدات الرياضية بطريقة سليمة ومناسبة، مع الحرص على عدم التسبب بأي ضرر أو تلف.</li>
+          <li>توضع المقتنيات الشخصية في الخزائن المخصصة داخل غرف الغيار، وتكون مسؤولية الحفاظ عليها على عاتق الطالب، دون أدنى مسؤولية على الجامعة أو على الشركة في حال الفقدان أو التلف.</li>
+          <li>يجب إعادة كافة الأدوات التي يتم استلامها من النشاط الرياضي بعد الانتهاء من الاستخدام، وتسليمها حسب الأصول وضمن عهدة موثقة.</li>
+        </ol>
+
+        <h3>رابعاً: شروط السلامة</h3>
+        <ol start="11">
+          <li>يتحمل الطالب كامل المسؤولية عن سلامته الشخصية أثناء استخدام الملعب.</li>
+          <li>في حال حدوث أي إصابة جسدية أو أضرار صحية نتيجة النشاط الرياضي داخل الحرم الجامعي أو الملاعب، فإن الجامعة أو الشركة غير مسؤولة بأي شكل من الأشكال عن تلك الإصابات أو نتائجها.</li>
+          <li>ننصح جميع الطلبة باتخاذ كافة الاحتياطات اللازمة للسلامة والالتزام بتعليمات الوقاية لتجنب أي إصابات.</li>
+        </ol>
+
+        <h3>خامساً: المخالفات والعقوبات</h3>
+        <ol start="14">
+          <li>يمنع تخريب أو اساءه استخدام المرافق أو المعدات داخل الملاعب.</li>
+          <li>يتحمل الطالب المخالف المسؤولية الكاملة، بما في ذلك دفع تكاليف الإصلاح أو الاستبدال لأي أضرار ناتجة عن سوء الاستخدام، إضافة إلى تعرضه للمساءلة القانونية وفق أنظمة الجامعة.</li>
+          <li>في حال تكرار المخالفات أو ارتكاب مخالفات جسيمة، يحق لإدارة الجامعة حرمان الطالب من استخدام الملاعب بشكل مؤقت أو دائم.</li>
+        </ol>
+
+        <div class="terms-note">
+          <strong>ملاحظة:</strong> باستخدامك ملاعب جامعة الاسراء، فانك تقر بقراءة التعليمات أعلاه والموافقة الكاملة عليها، وتتحمل كامل المسؤولية القانونية والشخصية المترتبة على مخالفتها.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="termsCancel">إلغاء</button>
+        <button class="btn btn-primary" id="termsAgree">أوافق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading Overlay ── -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>جاري تسجيل الدخول...</p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/security.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Mobile menu toggle
+    document.getElementById('menuToggle')?.addEventListener('click', () => {
+      document.getElementById('mainNav').classList.toggle('open');
+    });
+
+    // Terms modal handling
+    const termsCheckbox = document.getElementById('agreeTerms');
+    const termsModal = document.getElementById('termsModal');
+    
+    termsCheckbox?.addEventListener('change', function() {
+      if (this.checked) {
+        termsModal.classList.add('active');
+      }
+    });
+
+    document.getElementById('termsAgree')?.addEventListener('click', () => {
+      termsCheckbox.checked = true;
+      termsModal.classList.remove('active');
+    });
+
+    document.getElementById('termsCancel')?.addEventListener('click', () => {
+      termsCheckbox.checked = false;
+      termsModal.classList.remove('active');
+    });
+
+    // Login form handler
+    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const studentId = document.getElementById('studentId').value.trim();
+      const password = document.getElementById('password').value;
+      const agreeTerms = document.getElementById('agreeTerms').checked;
+      
+      // Reset errors
+      document.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible'));
+      document.getElementById('loginError').classList.add('hidden');
+      
+      // Validate
+      let hasError = false;
+      
+      if (!studentId) {
+        document.getElementById('studentIdError').classList.add('visible');
+        hasError = true;
+      }
+      if (!password) {
+        document.getElementById('passwordError').classList.add('visible');
+        hasError = true;
+      }
+      if (!agreeTerms) {
+        document.getElementById('termsError').classList.add('visible');
+        hasError = true;
+      }
+      
+      if (hasError) return;
+      
+      // Show loading
+      document.getElementById('loadingOverlay').classList.add('active');
+      document.getElementById('loginBtn').disabled = true;
+      
+      try {
+        const result = await AuthManager.login(studentId, password);
+        
+        if (result.success) {
+          // Store session
+          sessionStorage.setItem('iu_user', JSON.stringify(result.user));
+          sessionStorage.setItem('iu_token', result.token);
+          
+          // Check if we need to redirect back (e.g. from email confirm link)
+          const redirectUrl = sessionStorage.getItem('iu_redirect');
+          if (redirectUrl) {
+            sessionStorage.removeItem('iu_redirect');
+            window.location.href = redirectUrl;
+          }
+          // Otherwise redirect based on role
+          else if (result.user.role === 'admin') {
+            window.location.href = 'admin/dashboard.html';
+          } else if (result.user.role === 'coach') {
+            window.location.href = 'coach/scanner.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        } else {
+          document.getElementById('loginError').classList.remove('hidden');
+          document.getElementById('loginErrorText').textContent = result.message || 'رقم الطالب أو كلمة المرور غير صحيحة';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        document.getElementById('loginError').classList.remove('hidden');
+        document.getElementById('loginErrorText').textContent = 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.';
+      } finally {
+        document.getElementById('loadingOverlay').classList.remove('active');
+        document.getElementById('loginBtn').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

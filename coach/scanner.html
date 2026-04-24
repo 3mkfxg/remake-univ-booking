@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ماسح QR | المدرب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="scanner.html" class="header-logo">
+          <img src="../assets/logo.png" alt="جامعة الإسراء">
+          <span class="header-logo-text">جامعة الإسـراء — المدرب</span>
+        </a>
+        <nav class="header-nav" id="mainNav">
+          <a href="scanner.html" class="active">ماسح QR</a>
+          <a href="#" class="nav-logout" id="logoutBtn">
+            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="scanner-container">
+        <h1 class="section-title">ماسح رمز QR</h1>
+        <p class="text-center text-muted mb-6">قم بمسح رمز QR الموجود في تأكيد حجز اللاعب للتحقق من صحته</p>
+
+        <!-- Scanner Preview -->
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: var(--space-6); margin-bottom: var(--space-6);">
+          <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+          
+          <div class="text-center mt-4">
+            <button class="btn btn-primary" id="startScanBtn">
+              <i class="fas fa-camera"></i>
+              بدء المسح
+            </button>
+            <button class="btn btn-secondary hidden" id="stopScanBtn">
+              <i class="fas fa-stop"></i>
+              إيقاف
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Entry -->
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: var(--space-6);">
+          <h3 style="text-align: center; margin-bottom: var(--space-4);">أو أدخل رمز التحقق يدوياً</h3>
+          <div style="display: flex; gap: var(--space-2); max-width: 400px; margin: 0 auto;">
+            <input type="text" class="form-input" id="manualToken" placeholder="الصق رابط التحقق هنا...">
+            <button class="btn btn-primary" id="manualVerifyBtn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="hidden mt-6" id="scanResult">
+          <!-- Result will be injected here -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/security.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/booking.js"></script>
+  <script>
+    let html5QrcodeScanner = null;
+    let isScanning = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = AuthManager.getCurrentUser();
+      if (!user || (user.role !== 'coach' && user.role !== 'admin' && user.role !== 'vip')) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = '../index.html';
+      });
+
+      // Start scan button
+      document.getElementById('startScanBtn').addEventListener('click', startScan);
+      document.getElementById('stopScanBtn').addEventListener('click', stopScan);
+
+      // Manual verify
+      document.getElementById('manualVerifyBtn').addEventListener('click', () => {
+        const input = document.getElementById('manualToken').value.trim();
+        if (!input) return;
+        
+        // Extract token from URL or use directly
+        let token = input;
+        try {
+          const url = new URL(input);
+          token = url.searchParams.get('token') || input;
+        } catch {
+          // Not a URL — treat as token
+        }
+        
+        handleScanResult(token);
+      });
+    });
+
+    function startScan() {
+      if (isScanning) return;
+
+      html5QrcodeScanner = new Html5Qrcode("qr-reader");
+      
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          // Extract token from URL
+          let token = decodedText;
+          try {
+            const url = new URL(decodedText);
+            token = url.searchParams.get('token') || decodedText;
+          } catch {}
+          
+          handleScanResult(token);
+          stopScan();
+        },
+        (errorMessage) => {
+          // Ignore scan errors
+        }
+      ).then(() => {
+        isScanning = true;
+        document.getElementById('startScanBtn').classList.add('hidden');
+        document.getElementById('stopScanBtn').classList.remove('hidden');
+      }).catch(err => {
+        Utils.showToast('لا يمكن الوصول للكاميرا. تأكد من الصلاحيات.', 'error');
+      });
+    }
+
+    function stopScan() {
+      if (html5QrcodeScanner && isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+          isScanning = false;
+          document.getElementById('startScanBtn').classList.remove('hidden');
+          document.getElementById('stopScanBtn').classList.add('hidden');
+        });
+      }
+    }
+
+    async function handleScanResult(input) {
+      const resultDiv = document.getElementById('scanResult');
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = '<div class="text-center"><div class="spinner" style="margin:auto;"></div><p class="mt-2">جاري التحقق...</p></div>';
+
+      // Try looking up by ID first (the new Combo ID), then by Token
+      let booking = await BookingEngine.getBookingById(input);
+      if (!booking) {
+        booking = await BookingEngine.getBookingByToken(input);
+      }
+
+      if (!booking) {
+        resultDiv.innerHTML = `
+          <div class="cancel-card" style="border: 2px solid var(--color-action-danger);">
+            <div class="cancel-icon"><i class="fas fa-times-circle"></i></div>
+            <h2 style="color: var(--color-action-danger);">رمز غير صالح</h2>
+            <p class="text-muted">لم يتم العثور على حجز مرتبط بهذا الرمز</p>
+          </div>
+        `;
+        return;
+      }
+
+      const allConfirmed = booking.players.every(p => p.confirmed);
+      const isCancelled = booking.status === 'cancelled';
+
+      let statusColor, statusIcon, statusText;
+      if (isCancelled) {
+        statusColor = 'var(--color-action-danger)';
+        statusIcon = 'ban';
+        statusText = 'ملغي';
+      } else if (allConfirmed) {
+        statusColor = 'var(--color-status-verified)';
+        statusIcon = 'check-circle';
+        statusText = 'تم التأكيد ✓';
+      } else {
+        statusColor = 'var(--color-action-warning)';
+        statusIcon = 'exclamation-triangle';
+        statusText = 'غير مؤكد بالكامل';
+      }
+
+      resultDiv.innerHTML = `
+        <div style="background: var(--color-bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); overflow: hidden; border-top: 4px solid ${statusColor};">
+          <div style="padding: var(--space-6); text-align: center;">
+            <div style="width:60px; height:60px; border-radius:50%; background: rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; margin:0 auto var(--space-3); font-size:1.5rem; color:${statusColor};">
+              <i class="fas fa-${statusIcon}"></i>
+            </div>
+            <h2 style="color: ${statusColor}; margin-bottom: var(--space-1);">${statusText}</h2>
+          </div>
+          <div style="padding: 0 var(--space-6) var(--space-6);">
+            <div class="detail-row">
+              <span class="detail-label">الملعب</span>
+              <span class="detail-value">${booking.fieldName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">التاريخ</span>
+              <span class="detail-value">${Utils.formatDate(booking.date)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">الوقت</span>
+              <span class="detail-value">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span>
+            </div>
+            <div class="divider"></div>
+            <h4 style="margin-bottom: var(--space-2);">اللاعبون:</h4>
+            ${booking.players.map(p => `
+              <div style="display:flex; justify-content:space-between; padding:var(--space-2) 0; border-bottom:1px solid var(--color-border-light);">
+                <span>${p.name} (${p.id})</span>
+                <span class="badge ${p.confirmed ? 'badge-success' : 'badge-danger'}">${p.confirmed ? '✓' : '✗'}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
