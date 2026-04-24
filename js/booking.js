@@ -103,9 +103,10 @@ const BookingEngine = {
     
     const startHour = startTime.split(':')[0];
     const dateParts = date.split('-'); // [YYYY, MM, DD]
-    const dateCode = `${dateParts[2]}-${dateParts[1]}-${dateParts[0].substring(2)}`; // DD-MM-YY
+    const dateCode = `${dateParts[2]}${dateParts[1]}${dateParts[0].substring(2)}`; // DDMMYY
     
-    const bookingId = `${studentDigits}-${fieldCode}-${startHour}-${dateCode}`;
+    // Format: 2041PADB-1200-DDMMYY
+    const bookingId = `${studentDigits}${fieldCode}-${startHour}00-${dateCode}`;
 
     const booking = {
       bookingId,

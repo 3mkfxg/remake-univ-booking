@@ -51,8 +51,7 @@ const EmailService = {
 
   // ── Build base URL for links ──
   getBaseUrl() {
-    // Always use Firebase Hosting URL for email links
-    return 'https://new-booking-web.web.app/';
+    return 'https://3mkfxg.github.io/remake-univ-booking/';
   },
 
   // ── Build player confirm link ──
