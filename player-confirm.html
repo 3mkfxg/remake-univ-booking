@@ -141,18 +141,7 @@
     let booking = null;
     let playerId = null;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Get params: ?booking=BOOKING_ID&player=PLAYER_ID&token=TOKEN
-      const bookingId = Utils.getParam('booking');
-      playerId = Utils.getParam('player');
-      const token = Utils.getParam('token');
-
-      if (!bookingId || !playerId) {
-        showError();
-        return;
-      }
-
-      // ── CHECK LOGIN ──
+          // ── CHECK LOGIN ──
       const user = AuthManager.getCurrentUser();
       if (!user) {
         // Save the full URL so we can redirect back after login
@@ -161,21 +150,11 @@
         window.location.href = 'index.html';
         return;
       }
-
-      // ── VERIFY: Logged-in user must be the same player ──
-      if (user.uid.toLowerCase() !== playerId.toLowerCase()) {
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('confirmCard').classList.remove('hidden');
-        document.getElementById('headerIcon').innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-        document.getElementById('cardHeader').style.background = 'linear-gradient(135deg, #e65100, #f57c00)';
-        document.getElementById('headerTitle').textContent = 'حساب خاطئ';
-        document.getElementById('headerSubtitle').textContent = 
-          `أنت مسجل دخول كـ ${user.name} (${user.uid}). يجب تسجيل الدخول بحساب ${playerId} لتأكيد هذا الحجز.`;
-        document.getElementById('actionSection').innerHTML = `
-          <a href="index.html" class="btn btn-primary btn-block" onclick="AuthManager.logout(); sessionStorage.setItem('iu_redirect', window.location.href);">
-            <i class="fas fa-sign-in-alt"></i>
-            تسجيل الدخول بحساب ${playerId}
-          </a>
+      
+      // Removed strict identity check as per user request. 
+      // Any logged-in user can confirm if they have the secure token.
+      
+      // Update nav to show logged-in state>
         `;
         // Hide other sections
         document.querySelector('[style*="padding: var(--space-6); text-align: center"]').style.display = 'none';
