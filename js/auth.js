@@ -277,6 +277,12 @@ const AuthManager = {
   },
 
   // ── Role display names ──
+  // ── Get User Role for specific ID ──
+  async getUserRole(userId) {
+    const user = await this.getUserById(userId);
+    return user ? user.role : 'student';
+  },
+
   getRoleName(role) {
     const names = {
       admin: 'مدير النظام',

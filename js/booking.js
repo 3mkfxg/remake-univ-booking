@@ -479,7 +479,7 @@ const BookingEngine = {
         
         return snapshot.docs
           .map(doc => doc.data())
-          .filter(b => b.status !== 'cancelled' && b.players.length < b.maxPlayers);
+          .filter(b => b.isPublic === true && b.status !== 'cancelled' && b.players.length < b.maxPlayers);
       } catch(e) { return []; }
     } else {
       this._loadLocalBookings();
