@@ -4,7 +4,41 @@
 
 const BookingEngine = {
   // ── Local booking storage (demo mode) ──
-  _demoBookings: [],
+  _demoBookings: [
+    {
+      bookingId: 'PUBLIC-PADEL-1',
+      fieldName: 'ملعب البادل A',
+      sportType: 'padel',
+      date: '2026-04-26', // Updated to match user's current date
+      startTime: '16:00',
+      endTime: '17:00',
+      duration: 1,
+      bookedBy: 'st2005',
+      players: [
+        { id: 'st2005', name: 'فارس النابلسي', confirmed: true },
+        { id: 'st2006', name: 'كريم الزعبي', confirmed: true }
+      ],
+      maxPlayers: 4,
+      isPublic: true,
+      status: 'active'
+    },
+    {
+      bookingId: 'PUBLIC-FOOT-1',
+      fieldName: 'ملعب كرة القدم الخماسي',
+      sportType: 'football',
+      date: '2026-04-27',
+      startTime: '10:00',
+      endTime: '11:00',
+      duration: 1,
+      bookedBy: 'st2001',
+      players: [
+        { id: 'st2001', name: 'سامي العبادي', confirmed: true }
+      ],
+      maxPlayers: 10,
+      isPublic: true,
+      status: 'active'
+    }
+  ],
 
   // ── Fields data ──
   FIELDS: {
