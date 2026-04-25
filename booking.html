@@ -136,6 +136,20 @@
               </div>
               <p class="form-help mb-4" id="playerHelp">أدخل أرقام الطلاب الجامعية للاعبين</p>
               <div id="playerFields"></div>
+
+              <!-- Public Booking Toggle -->
+              <div class="mt-4 p-3 bg-light rounded" style="background: rgba(0,0,0,0.03); border-radius: var(--radius-md);">
+                <label class="flex-between m-0 cursor-pointer" style="cursor: pointer;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <i class="fas fa-globe-americas" style="color: var(--color-text-brand);"></i>
+                    <span style="font-size: var(--font-size-sm); font-weight: 600;">فتح الحجز للعامة</span>
+                  </div>
+                  <input type="checkbox" id="publicToggle" style="width: 18px; height: 18px; accent-color: var(--color-text-brand);">
+                </label>
+                <p class="text-muted mt-2" style="font-size: var(--font-size-xs); line-height: 1.4;">
+                  عند تفعيل هذا الخيار، سيتمكن أي طالب من رؤية هذا الحجز والانضمام إلى الخانات الفارغة.
+                </p>
+              </div>
             </div>
 
             <!-- Booking Summary -->
@@ -610,9 +624,46 @@
     }
 
     function checkAllPlayersValid() {
-      const allValid = document.querySelectorAll('.player-status.valid').length === currentField.players;
+      const inputs = document.querySelectorAll('.player-id-input');
+      const statuses = document.querySelectorAll('.player-status');
+      const isPublic = document.getElementById('publicToggle')?.checked || false;
+      
+      let allValid = true;
+      let filledCount = 0;
+
+      inputs.forEach((input, i) => {
+        const val = input.value.trim();
+        const status = statuses[i];
+        
+        if (val) {
+          filledCount++;
+          if (!status.classList.contains('valid')) {
+            allValid = false;
+          }
+        } else {
+          // Empty slot logic
+          if (!isPublic) {
+            allValid = false;
+          }
+        }
+      });
+
+      // At least 1 player (the booker) must be there
+      if (filledCount < 1) allValid = false;
+
       const btn = document.getElementById('confirmBookingBtn');
-      btn.disabled = !allValid || selectedSlots.length === 0;
+      if (btn) btn.disabled = !allValid || selectedSlots.length === 0;
+      
+      const statusEl = document.getElementById('summaryStatus');
+      if (statusEl) {
+        if (isPublic) {
+          statusEl.textContent = `حجز عام (${filledCount}/${currentField.players})`;
+          statusEl.className = 'mt-2 text-sm text-brand';
+        } else {
+          statusEl.textContent = allValid ? 'جاهز للحجز' : 'بانتظار إكمال البيانات';
+          statusEl.className = `mt-2 text-sm ${allValid ? 'text-success' : 'text-warning'}`;
+        }
+      }
     }
 
     // ── Event Listeners ──
@@ -663,11 +714,13 @@
       const body = document.getElementById('confirmModalBody');
       const duration = selectedSlots.length;
       const extraHours = Math.max(0, duration - 1);
+      const isPublic = document.getElementById('publicToggle').checked;
       
       let html = `
         <p><strong>الملعب:</strong> ${currentField.name}</p>
         <p><strong>التاريخ:</strong> ${Utils.formatDate(selectedDate)}</p>
         <p><strong>الوقت:</strong> ${Utils.formatTime(selectedSlots[0].startTime)} - ${Utils.formatTime(selectedSlots[selectedSlots.length - 1].endTime)}</p>
+        <p><strong>النوع:</strong> ${isPublic ? 'حجز عام' : 'حجز خاص'}</p>
         <p><strong>المدة:</strong> ${duration} ساعة</p>
       `;
       
@@ -693,6 +746,7 @@
         
         for (const input of inputs) {
           const pid = input.value.trim().toLowerCase();
+          if (!pid) continue;
           const user = await AuthManager.getUserById(pid);
           players.push({
             id: pid,
@@ -712,6 +766,7 @@
           endTime,
           duration,
           bookedBy: currentUser.uid,
+          isPublic: document.getElementById('publicToggle').checked,
           players
         });
 

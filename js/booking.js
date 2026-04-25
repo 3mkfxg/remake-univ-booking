@@ -52,9 +52,14 @@ const BookingEngine = {
     const field = this.FIELDS[fieldId];
     if (!field) throw new Error('الملعب غير موجود');
 
+    const isPublic = !!bookingData.isPublic;
+
     // Validate player count
-    if (players.length !== field.players) {
-      throw new Error(`يجب إدخال ${field.players} لاعبين لهذا الملعب`);
+    if (!isPublic && players.length !== field.players) {
+      throw new Error(`يجب إدخال ${field.players} لاعبين لهذا الملعب (أو اجعله حجز عام)`);
+    }
+    if (players.length < 1) {
+      throw new Error('يجب إدخال لاعب واحد على الأقل');
     }
 
     // Check for duplicate player IDs in form
@@ -126,6 +131,8 @@ const BookingEngine = {
         confirmed: p.id.toLowerCase() === user.uid.toLowerCase()
       })),
       status: 'pending',
+      isPublic,
+      maxPlayers: field.players,
       extraHours,
       extraCost,
       emailsSent: false,
@@ -423,6 +430,79 @@ const BookingEngine = {
       return [...this._demoBookings].sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
+    }
+  },
+
+  // ── Get all public bookings with empty slots ──
+  async getPublicBookings() {
+    const today = Utils.today();
+    if (isFirebaseConfigured()) {
+      try {
+        const snapshot = await db.collection(Collections.BOOKINGS)
+          .where('date', '>=', today)
+          .where('isPublic', '==', true)
+          .get();
+        
+        return snapshot.docs
+          .map(doc => doc.data())
+          .filter(b => b.status !== 'cancelled' && b.players.length < b.maxPlayers);
+      } catch(e) { return []; }
+    } else {
+      this._loadLocalBookings();
+      return this._demoBookings.filter(b => 
+        b.date >= today && b.isPublic && b.players.length < b.maxPlayers && b.status !== 'cancelled'
+      );
+    }
+  },
+
+  // ── Join a public booking ──
+  async joinPublicBooking(bookingId, userId, userName) {
+    const uid = userId.toLowerCase();
+    
+    if (isFirebaseConfigured()) {
+      try {
+        const docRef = db.collection(Collections.BOOKINGS).doc(bookingId);
+        const doc = await docRef.get();
+        if (!doc.exists) throw new Error('الحجز غير موجود');
+        
+        const b = doc.data();
+        if (b.players.length >= b.maxPlayers) throw new Error('الحجز اكتمل بالفعل');
+        if (b.players.some(p => p.id.toLowerCase() === uid)) throw new Error('أنت مشارك بالفعل في هذا الحجز');
+
+        // Check Quota
+        const role = await AuthManager.getUserRole(uid);
+        const limit = AuthManager.getDailyLimit(role);
+        const used = await this.getUsedHoursOnDate(uid, b.date);
+        if (used + b.duration > limit && limit !== Infinity) {
+          throw new Error('لا يمكنك الانضمام: لقد تجاوزت حدك اليومي لهذا التاريخ');
+        }
+
+        // Add player
+        const newPlayers = [...b.players, { id: uid, name: userName, confirmed: true }];
+        
+        const updates = { players: newPlayers };
+        // If now full, check if all confirmed (joining always confirms)
+        if (newPlayers.length === b.maxPlayers && newPlayers.every(p => p.confirmed)) {
+          // Final overlap check
+          const existing = await this.getFieldBookings(b.fieldId, b.date);
+          const overlap = existing.some(ext => ext.bookingId !== b.bookingId && this._timesOverlap(b.startTime, b.endTime, ext.startTime, ext.endTime));
+          if (overlap) throw new Error('عذراً، هذا الموعد تم حجزه وتأكيده للتو من قبل فريق آخر');
+          
+          updates.status = 'active';
+        }
+
+        await docRef.update(updates);
+        return true;
+      } catch(e) { throw e; }
+    } else {
+      // Demo mode
+      this._loadLocalBookings();
+      const b = this._demoBookings.find(x => x.bookingId === bookingId);
+      if (!b) throw new Error('الحجز غير موجود');
+      b.players.push({ id: uid, name: userName, confirmed: true });
+      if (b.players.length === b.maxPlayers) b.status = 'active';
+      Utils.saveLocal('bookings', this._demoBookings);
+      return true;
     }
   },
 
