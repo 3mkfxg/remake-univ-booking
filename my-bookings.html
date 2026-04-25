@@ -21,7 +21,7 @@
     .booking-tabs {
       display: flex;
       gap: var(--space-2);
-      margin-bottom: var(--space-6);
+      margin-bottom: var(--space-4);
       border-bottom: 2px solid var(--color-border-light);
       padding-bottom: var(--space-2);
       overflow-x: auto;
@@ -35,29 +35,45 @@
       color: var(--color-text-muted);
       transition: all 0.2s;
       border: 1px solid transparent;
+      display: flex;
+      align-items: center;
     }
-    .booking-tab:hover {
+    .booking-tab:hover { background: var(--color-bg-page-light); }
+    .booking-tab.active { background: var(--color-text-brand); color: white; }
+    
+    /* Nested Tabs Style */
+    .nested-tabs {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
       background: var(--color-bg-page-light);
+      padding: var(--space-2);
+      border-radius: var(--radius-lg);
+      width: fit-content;
     }
-    .booking-tab.active {
-      background: var(--color-text-brand);
-      color: white;
+    .nested-tab {
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text-muted);
+      transition: all 0.2s;
     }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
+    .nested-tab.active { background: white; color: var(--color-text-brand); box-shadow: var(--shadow-sm); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     .badge-count {
       background: rgba(255,255,255,0.2);
-      padding: 1px 6px;
-      border-radius: 10px;
-      font-size: 10px;
-      margin-right: 5px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      margin-right: 8px;
     }
     .booking-tab:not(.active) .badge-count {
-      background: var(--color-bg-page-light);
+      background: #eee;
       color: var(--color-text-brand);
     }
   </style>
@@ -85,44 +101,52 @@
       <div class="container">
         <h1 class="section-title">إدارة حجوزاتك</h1>
 
-        <!-- Sub Tabs -->
-        <div class="booking-tabs" id="tabsList">
-          <div class="booking-tab active" onclick="switchTab('active')">
-            نشطة <span class="badge-count" id="count-active">0</span>
+        <!-- Main Tabs -->
+        <div class="booking-tabs" id="mainTabsList">
+          <div class="booking-tab active" onclick="switchMainTab('active')">
+            نشطة <span class="badge-count" id="count-active-total">0</span>
           </div>
-          <div class="booking-tab" onclick="switchTab('invited')">
+          <div class="booking-tab" onclick="switchMainTab('invited')">
             دعوات بانتظارك <span class="badge-count" id="count-invited">0</span>
           </div>
-          <div class="booking-tab" onclick="switchTab('expired')">
+          <div class="booking-tab" onclick="switchMainTab('expired')">
             منتهية <span class="badge-count" id="count-expired">0</span>
           </div>
-          <div class="booking-tab" onclick="switchTab('public')">
+          <div class="booking-tab" onclick="switchMainTab('public')">
             البحث عن حجز عام
           </div>
         </div>
 
-        <!-- Active Tab Content -->
+        <!-- ACTIVE TAB: Nested Tabs nested here -->
         <div id="active-tab" class="tab-content active">
-          <div id="activeBookings" class="bookings-list">
-            <div class="text-center p-8"><div class="spinner"></div></div>
+          <div class="nested-tabs">
+            <div class="nested-tab active" id="nested-btn-confirmed" onclick="switchNestedTab('confirmed')">
+              مؤكد <span id="count-active-confirmed" style="margin-right:5px;">(0)</span>
+            </div>
+            <div class="nested-tab" id="nested-btn-pending" onclick="switchNestedTab('pending')">
+              بانتظار التأكيد <span id="count-active-pending" style="margin-right:5px;">(0)</span>
+            </div>
+          </div>
+
+          <div id="active-confirmed-content" class="active-sub-content">
+            <div id="list-active-confirmed" class="bookings-list"></div>
+          </div>
+          <div id="active-pending-content" class="active-sub-content" style="display:none;">
+            <div id="list-active-pending" class="bookings-list"></div>
           </div>
         </div>
 
-        <!-- Invited Tab Content -->
+        <!-- INVITED TAB -->
         <div id="invited-tab" class="tab-content">
-          <div id="invitedBookings" class="bookings-list">
-            <div class="text-center p-8"><div class="spinner"></div></div>
-          </div>
+          <div id="list-invited" class="bookings-list"></div>
         </div>
 
-        <!-- Expired Tab Content -->
+        <!-- EXPIRED TAB -->
         <div id="expired-tab" class="tab-content">
-          <div id="expiredBookings" class="bookings-list">
-            <div class="text-center p-8"><div class="spinner"></div></div>
-          </div>
+          <div id="list-expired" class="bookings-list"></div>
         </div>
 
-        <!-- Public Tab (Coming Soon) -->
+        <!-- PUBLIC TAB -->
         <div id="public-tab" class="tab-content">
           <div class="empty-state">
             <div class="empty-icon"><i class="fas fa-search-plus"></i></div>
@@ -130,6 +154,7 @@
             <p>قريباً! ستتمكن من الانضمام إلى حجوزات عامة يفتحها لاعبون آخرون.</p>
           </div>
         </div>
+
       </div>
     </main>
   </div>
@@ -143,38 +168,34 @@
   <script src="js/booking.js"></script>
   <script>
     let currentUser = null;
+    let allBookingsData = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       currentUser = AuthManager.getCurrentUser();
       if (!currentUser) { window.location.href = 'index.html'; return; }
-      loadAllBookings();
+      loadAll();
     });
 
-    async function loadAllBookings() {
+    async function loadAll() {
       try {
-        const bookings = await BookingEngine.getUserBookings(currentUser.uid);
-        renderBookings(bookings);
-      } catch (error) {
-        console.error(error);
-        const err = '<div class="alert alert-danger">فشل تحميل الحجوزات</div>';
-        document.getElementById('activeBookings').innerHTML = err;
-        document.getElementById('expiredBookings').innerHTML = err;
-        document.getElementById('invitedBookings').innerHTML = err;
+        allBookingsData = await BookingEngine.getUserBookings(currentUser.uid);
+        organizeAndRender();
+      } catch (e) {
+        console.error(e);
       }
     }
 
-    function renderBookings(bookings) {
+    function organizeAndRender() {
       const now = new Date();
       
-      const active = [];
-      const expired = [];
+      const activeConfirmed = [];
+      const activePending = [];
       const invited = [];
+      const expired = [];
 
-      bookings.forEach(b => {
-        // Parse booking end time
+      allBookingsData.forEach(b => {
         const endDateTime = new Date(`${b.date}T${b.endTime}`);
         const isExpired = endDateTime < now;
-        
         const playerEntry = b.players.find(p => p.id.toLowerCase() === currentUser.uid.toLowerCase());
         const isPendingInvite = playerEntry && !playerEntry.confirmed;
 
@@ -183,85 +204,86 @@
         } else if (isPendingInvite) {
           invited.push(b);
         } else {
-          active.push(b);
+          // It's active. Now split by full confirmation
+          if (b.status === 'active') {
+            activeConfirmed.push(b);
+          } else {
+            activePending.push(b);
+          }
         }
       });
 
-      // Update counts
-      document.getElementById('count-active').textContent = active.length;
+      // Update Counts
+      document.getElementById('count-active-total').textContent = activeConfirmed.length + activePending.length;
+      document.getElementById('count-active-confirmed').textContent = `(${activeConfirmed.length})`;
+      document.getElementById('count-active-pending').textContent = `(${activePending.length})`;
       document.getElementById('count-invited').textContent = invited.length;
       document.getElementById('count-expired').textContent = expired.length;
 
-      // Render Active
-      const activeGrid = document.getElementById('activeBookings');
-      activeGrid.innerHTML = active.length ? active.map(b => renderBookingCard(b, false)).join('') : renderEmpty('لا توجد حجوزات نشطة حالياً');
-
-      // Render Invited
-      const invitedGrid = document.getElementById('invitedBookings');
-      invitedGrid.innerHTML = invited.length ? invited.map(b => renderBookingCard(b, true)).join('') : renderEmpty('لا توجد دعوات بانتظار التأكيد');
-
-      // Render Expired
-      const expiredGrid = document.getElementById('expiredBookings');
-      expiredGrid.innerHTML = expired.length ? expired.map(b => renderBookingCard(b, false, true)).join('') : renderEmpty('لا توجد حجوزات منتهية');
+      // Render Lists
+      renderList('list-active-confirmed', activeConfirmed, false, false);
+      renderList('list-active-pending', activePending, false, false);
+      renderList('list-invited', invited, true, false);
+      renderList('list-expired', expired, false, true);
     }
 
-    function renderBookingCard(b, isPending, isExpired = false) {
-      const statusClass = isExpired ? 'status-expired' : (isPending ? 'status-pending' : 'status-confirmed');
-      const statusLabel = isExpired ? 'منتهي' : (isPending ? 'بانتظار التأكيد' : 'مؤكد');
-      
-      return `
+    function renderList(elemId, list, isPendingAction, isExpired) {
+      const elem = document.getElementById(elemId);
+      if (!list.length) {
+        elem.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-calendar-alt"></i></div>
+            <p>لا توجد حجوزات في هذا القسم</p>
+          </div>
+        `;
+        return;
+      }
+
+      elem.innerHTML = list.map(b => `
         <div class="booking-card ${isExpired ? 'expired' : ''}">
-          <div class="booking-icon"><i class="fas ${getSportIcon(b.sportType)}"></i></div>
+          <div class="booking-icon"><i class="fas ${getIcon(b.sportType)}"></i></div>
           <div class="booking-info">
             <h3 class="booking-title">${b.fieldName}</h3>
             <div class="booking-meta">
               <span><i class="far fa-calendar-alt"></i> ${Utils.formatDate(b.date)}</span>
               <span><i class="far fa-clock"></i> ${Utils.formatTime(b.startTime)}</span>
-              <span class="booking-status ${statusClass}">${statusLabel}</span>
+              <span class="booking-status ${isExpired ? 'status-expired' : (b.status === 'active' ? 'status-confirmed' : 'status-pending')}">
+                ${isExpired ? 'منتهي' : (b.status === 'active' ? 'مؤكد' : 'بانتظار التأكيد')}
+              </span>
             </div>
-            <div class="booking-id-tag">رقم الحجز: ${b.bookingId}</div>
+            <div class="booking-id-tag">ID: ${b.bookingId}</div>
           </div>
           <div class="booking-actions">
-            ${isPending ? `
-              <a href="player-confirm.html?booking=${b.bookingId}&player=${currentUser.uid}&token=${encodeURIComponent(b.token)}" class="btn btn-primary btn-sm">
-                تأكيد الآن <i class="fas fa-check"></i>
-              </a>
+            ${isPendingAction ? `
+              <a href="player-confirm.html?booking=${b.bookingId}&player=${currentUser.uid}&token=${encodeURIComponent(b.token)}" class="btn btn-primary btn-sm">تأكيد الآن</a>
             ` : `
-              <a href="confirmation.html?id=${b.bookingId}" class="btn btn-secondary btn-sm">
-                التفاصيل <i class="fas fa-info-circle"></i>
-              </a>
+              <a href="confirmation.html?id=${b.bookingId}" class="btn btn-secondary btn-sm">التفاصيل</a>
             `}
           </div>
         </div>
-      `;
+      `).join('');
     }
 
-    function renderEmpty(msg) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon"><i class="fas fa-history"></i></div>
-          <p>${msg}</p>
-        </div>
-      `;
+    function getIcon(s) {
+      const m = { padel: 'fa-table-tennis-paddle-ball', football: 'fa-futbol', squash: 'fa-table-tennis-paddle-ball', multi: 'fa-basketball', beach: 'fa-umbrella-beach' };
+      return m[s] || 'fa-star';
     }
 
-    function getSportIcon(sport) {
-      const icons = { padel: 'fa-table-tennis-paddle-ball', football: 'fa-futbol', squash: 'fa-table-tennis-paddle-ball', multi: 'fa-basketball', beach: 'fa-umbrella-beach' };
-      return icons[sport] || 'fa-star';
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
+    function switchMainTab(id) {
+      document.querySelectorAll('#mainTabsList .booking-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      // Find the clicked tab element by matching the text or using an index
-      const tabs = document.querySelectorAll('.booking-tab');
-      if (tabId === 'active') tabs[0].classList.add('active');
-      if (tabId === 'invited') tabs[1].classList.add('active');
-      if (tabId === 'expired') tabs[2].classList.add('active');
-      if (tabId === 'public') tabs[3].classList.add('active');
+      const tabIdx = { active: 0, invited: 1, expired: 2, public: 3 }[id];
+      document.querySelectorAll('#mainTabsList .booking-tab')[tabIdx].classList.add('active');
+      document.getElementById(id + '-tab').classList.add('active');
+    }
 
-      document.getElementById(tabId + '-tab').classList.add('active');
+    function switchNestedTab(id) {
+      document.querySelectorAll('.nested-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.active-sub-content').forEach(c => c.style.display = 'none');
+      
+      document.getElementById('nested-btn-' + id).classList.add('active');
+      document.getElementById('active-' + id + '-content').style.display = 'block';
     }
   </script>
 </body>
