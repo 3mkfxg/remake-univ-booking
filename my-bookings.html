@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="إدارة حجوزاتك - نظام حجز ملاعب جامعة الإسراء">
+  <meta name="description" content="حجوزاتي - نظام حجز ملاعب جامعة الإسراء">
   <title>حجوزاتي | نظام حجز الملاعب</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <link rel="stylesheet" href="css/variables.css">
@@ -16,58 +16,6 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/pages.css">
   <link rel="icon" type="image/png" href="assets/logo.png">
-
-  <style>
-    .booking-tabs {
-      display: flex; gap: var(--space-2); margin-bottom: var(--space-4);
-      border-bottom: 2px solid var(--color-border-light); padding-bottom: var(--space-2);
-      overflow-x: auto; white-space: nowrap;
-    }
-    .booking-tab {
-      padding: var(--space-3) var(--space-6); border-radius: var(--radius-md);
-      cursor: pointer; font-weight: 600; color: var(--color-text-muted);
-      transition: all 0.2s; border: 1px solid transparent; display: flex; align-items: center;
-    }
-    .booking-tab.active { background: var(--color-text-brand); color: white; }
-    
-    .nested-tabs {
-      display: flex; gap: var(--space-3); margin-bottom: var(--space-5);
-      background: var(--color-bg-page-light); padding: var(--space-2); border-radius: var(--radius-lg); width: fit-content;
-    }
-    .nested-tab {
-      padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
-      cursor: pointer; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted);
-    }
-    .nested-tab.active { background: white; color: var(--color-text-brand); box-shadow: var(--shadow-sm); }
-    
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .badge-count {
-      background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 8px;
-    }
-    .booking-tab:not(.active) .badge-count { background: #eee; color: var(--color-text-brand); }
-
-    /* Public Booking Specific */
-    .public-card {
-      border: 1px solid var(--color-border-light); border-radius: var(--radius-lg);
-      overflow: hidden; background: white; transition: transform 0.2s;
-    }
-    .public-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-    .public-header {
-      background: var(--color-text-brand); color: white; padding: var(--space-3) var(--space-4);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .public-body { padding: var(--space-4); }
-    .slot-indicator {
-      display: flex; gap: 4px; margin-top: 10px;
-    }
-    .slot-dot {
-      width: 12px; height: 12px; border-radius: 50%; background: #eee;
-    }
-    .slot-dot.filled { background: var(--color-status-verified); }
-    .slot-dot.empty { border: 2px dashed #ccc; background: transparent; }
-  </style>
 </head>
 <body>
   <div class="page-wrapper">
@@ -77,25 +25,24 @@
           <img src="assets/logo.png" alt="جامعة الإسراء">
           <span class="header-logo-text">جامعة الإسـراء</span>
         </a>
-        <nav class="header-nav">
+        <nav class="header-nav" id="mainNav">
           <div class="user-info-badge" id="headerUserBadge" style="display: none;">
             <div class="user-details">
-              <span class="user-name" id="navUserName">جاري التحميل...</span>
+              <span class="user-name" id="navUserName">...</span>
               <span class="user-id" id="navUserId">...</span>
             </div>
             <div class="user-icon"><i class="fas fa-user"></i></div>
           </div>
           <a href="dashboard.html">الرئيسية</a>
-          <a href="dashboard.html">الملاعب</a>
           <a href="my-bookings.html" class="active">حجوزاتي</a>
-          <a href="#" onclick="AuthManager.logout(); window.location.href='index.html';" class="nav-logout">تسجيل الخروج</a>
+          <a href="#" class="nav-logout" id="logoutBtn">تسجيل الخروج</a>
         </nav>
       </div>
     </header>
 
     <main class="page-content">
       <div class="container">
-        <h1 class="section-title">إدارة حجوزاتك</h1>
+        <h1 class="text-brand mb-6"><i class="fas fa-list-ul"></i> إدارة الحجوزات</h1>
 
         <div class="booking-tabs" id="mainTabsList">
           <div class="booking-tab active" onclick="switchMainTab('active')">نشطة <span class="badge-count" id="count-active-total">0</span></div>
@@ -121,15 +68,24 @@
             <h2 style="font-size: var(--font-size-lg);">اكتشف حجوزات مفتوحة</h2>
             <p class="text-muted" style="font-size: var(--font-size-sm);">انضم إلى فرق أخرى وأكمل العدد!</p>
           </div>
-          <div id="list-public" class="grid grid-2 gap-6">
-            <div class="spinner"></div>
-          </div>
+          <div id="list-public" class="grid grid-2 gap-6"></div>
         </div>
       </div>
     </main>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>جاري المعالجة...</p></div>
+  <div class="modal-overlay" id="publicDetailsModal">
+    <div class="modal">
+      <div class="modal-header"><h3>تفاصيل الحجز العام</h3></div>
+      <div class="modal-body" id="publicDetailsBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('publicDetailsModal')">إغلاق</button>
+        <button class="btn btn-primary" id="joinPublicBtn">انضمام للفريق</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -140,152 +96,128 @@
   <script src="js/auth.js"></script>
   <script src="js/booking.js"></script>
   <script>
-    let currentUser = null;
-    let allBookingsData = [];
+    let currentUser = null, allBookingsData = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
-      currentUser = AuthManager.getCurrentUser();
-      if (!currentUser) { window.location.href = 'index.html'; return; }
-      
-      // Update identity
-      const badge = document.getElementById('headerUserBadge');
-      if (badge) {
-        badge.style.display = 'flex';
-        document.getElementById('navUserName').textContent = currentUser.name;
-        document.getElementById('navUserId').textContent = currentUser.uid;
-      }
-
-      // Load data
-      await loadAll();
-
-      // Check URL for specific tab (e.g., ?tab=public)
-      const targetTab = Utils.getParam('tab');
-      if (targetTab) {
-        switchMainTab(targetTab);
-      }
+      AuthManager.onAuthStateChanged(user => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        currentUser = user;
+        document.getElementById('headerUserBadge').style.display = 'flex';
+        document.getElementById('navUserName').textContent = user.name;
+        document.getElementById('navUserId').textContent = user.uid;
+        loadAll();
+      });
+      if (Utils.getParam('tab')) switchMainTab(Utils.getParam('tab'));
     });
 
     async function loadAll() {
       try {
         allBookingsData = await BookingEngine.getUserBookings(currentUser.uid);
-        const publicBookings = await BookingEngine.getPublicBookings();
-        organizeAndRender(publicBookings);
+        const publicList = await BookingEngine.getPublicBookings();
+        renderMain(publicList);
       } catch (e) { console.error(e); }
     }
 
-    function organizeAndRender(publicList) {
+    function renderMain(publicList) {
+      const activeC = [], activeP = [], invited = [], expired = [];
       const now = new Date();
-      const activeConfirmed = [], activePending = [], invited = [], expired = [];
-
       allBookingsData.forEach(b => {
-        const endDateTime = new Date(`${b.date}T${b.endTime}`);
-        const isExpired = endDateTime < now;
-        const playerEntry = b.players.find(p => p.id.toLowerCase() === currentUser.uid.toLowerCase());
-        const isPendingInvite = playerEntry && !playerEntry.confirmed;
-
-        if (isExpired) expired.push(b);
-        else if (isPendingInvite) invited.push(b);
-        else b.status === 'active' ? activeConfirmed.push(b) : activePending.push(b);
+        const isExp = new Date(`${b.date}T${b.endTime}`) < now;
+        const pEntry = b.players.find(p => p.id.toLowerCase() === currentUser.uid.toLowerCase());
+        const isInv = pEntry && !pEntry.confirmed;
+        if (isExp) expired.push(b);
+        else if (isInv) invited.push(b);
+        else b.status === 'active' ? activeC.push(b) : activeP.push(b);
       });
 
-      document.getElementById('count-active-total').textContent = activeConfirmed.length + activePending.length;
-      document.getElementById('count-active-confirmed').textContent = `(${activeConfirmed.length})`;
-      document.getElementById('count-active-pending').textContent = `(${activePending.length})`;
+      document.getElementById('count-active-total').textContent = activeC.length + activeP.length;
+      document.getElementById('count-active-confirmed').textContent = `(${activeC.length})`;
+      document.getElementById('count-active-pending').textContent = `(${activeP.length})`;
       document.getElementById('count-invited').textContent = invited.length;
       document.getElementById('count-expired').textContent = expired.length;
       document.getElementById('count-public').textContent = publicList.length;
 
-      renderList('list-active-confirmed', activeConfirmed, false, false);
-      renderList('list-active-pending', activePending, false, false);
+      renderList('list-active-confirmed', activeC, false, false);
+      renderList('list-active-pending', activeP, false, false);
       renderList('list-invited', invited, true, false);
       renderList('list-expired', expired, false, true);
-      renderPublicList(publicList);
+      renderPublic(publicList);
     }
 
-    function renderList(elemId, list, isPendingAction, isExpired) {
-      const elem = document.getElementById(elemId);
-      if (!list.length) { elem.innerHTML = `<div class="empty-state"><p>لا توجد حجوزات</p></div>`; return; }
-      elem.innerHTML = list.map(b => `
-        <div class="booking-card ${isExpired ? 'expired' : ''}">
+    function renderList(id, list, isInv, isExp) {
+      const e = document.getElementById(id);
+      if (!list.length) { e.innerHTML = '<div class="empty-state">لا توجد حجوزات</div>'; return; }
+      e.innerHTML = list.map(b => `
+        <div class="booking-card ${isExp?'expired':''}">
           <div class="booking-icon"><i class="fas ${getIcon(b.sportType)}"></i></div>
           <div class="booking-info">
             <h3 class="booking-title">${b.fieldName}</h3>
-            <div class="booking-meta">
-              <span><i class="far fa-calendar-alt"></i> ${Utils.formatDate(b.date)}</span>
-              <span><i class="far fa-clock"></i> ${Utils.formatTime(b.startTime)}</span>
-            </div>
+            <div class="booking-meta"><span>${Utils.formatDate(b.date)}</span> | <span>${Utils.formatTime(b.startTime)}</span></div>
             <div class="booking-id-tag">ID: ${b.bookingId}</div>
           </div>
           <div class="booking-actions">
-            ${isPendingAction ? `<a href="player-confirm.html?booking=${b.bookingId}&player=${currentUser.uid}&token=${encodeURIComponent(b.token)}" class="btn btn-primary btn-sm">تأكيد</a>` : `<a href="confirmation.html?id=${b.bookingId}" class="btn btn-secondary btn-sm">التفاصيل</a>`}
+            ${isInv? `<a href="player-confirm.html?booking=${b.bookingId}&player=${currentUser.uid}&token=${encodeURIComponent(b.token)}" class="btn btn-primary btn-sm">تأكيد الحضور</a>` : `<a href="confirmation.html?id=${b.bookingId}" class="btn btn-secondary btn-sm">عرض</a>`}
           </div>
         </div>
       `).join('');
     }
 
-    function renderPublicList(list) {
-      const container = document.getElementById('list-public');
-      // Filter out bookings where user is already a player
-      const available = list.filter(b => !b.players.some(p => p.id.toLowerCase() === currentUser.uid.toLowerCase()));
-      
-      if (!available.length) {
-        container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><p>لا توجد حجوزات عامة متاحة حالياً</p></div>`;
-        return;
-      }
-
-      container.innerHTML = available.map(b => {
-        const emptySlots = b.maxPlayers - b.players.length;
-        const dots = [];
-        for(let i=0; i<b.maxPlayers; i++) {
-          dots.push(`<div class="slot-dot ${i < b.players.length ? 'filled' : 'empty'}"></div>`);
-        }
-
-        return `
-          <div class="public-card">
-            <div class="public-header">
-              <span style="font-weight: 700;">${b.fieldName}</span>
-              <span class="badge badge-info">${emptySlots} شاغر</span>
-            </div>
-            <div class="public-body">
-              <div class="flex-between mb-2">
-                 <span style="font-size: var(--font-size-sm);"><i class="far fa-calendar"></i> ${Utils.formatDate(b.date)}</span>
-                 <span style="font-size: var(--font-size-sm);"><i class="far fa-clock"></i> ${Utils.formatTime(b.startTime)}</span>
-              </div>
-              <div class="slot-indicator">${dots.join('')}</div>
-              <button class="btn btn-primary btn-block mt-4" onclick="joinBooking('${b.bookingId}')">انضم للفريق</button>
-            </div>
+    function renderPublic(list) {
+      const e = document.getElementById('list-public');
+      const av = list.filter(b => !b.players.some(p => p.id.toLowerCase() === currentUser.uid.toLowerCase()));
+      if (!av.length) { e.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">لا توجد حجوزات عامة حالياً</div>'; return; }
+      e.innerHTML = av.map(b => `
+        <div class="public-card">
+          <div class="public-header"><span>${b.fieldName}</span> <span class="badge badge-info">${b.maxPlayers - b.players.length} شاغر</span></div>
+          <div class="public-body">
+            <div class="mb-3"><span>${Utils.formatDate(b.date)}</span> @ <span>${Utils.formatTime(b.startTime)}</span></div>
+            <button class="btn btn-primary btn-block" onclick='viewPublicInfo(${JSON.stringify(b).replace(/'/g, "&apos;")})'>عرض التفاصيل والانضمام</button>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
     }
 
-    async function joinBooking(id) {
-      const loader = document.getElementById('loadingOverlay');
-      loader.classList.add('active');
+    function viewPublicInfo(b) {
+      const body = document.getElementById('publicDetailsBody');
+      body.innerHTML = `
+        <div class="p-2">
+          <h4>${b.fieldName}</h4>
+          <p>التاريخ: ${Utils.formatDate(b.date)}</p>
+          <p>الوقت: ${Utils.formatTime(b.startTime)}</p>
+          <p class="mt-4 font-bold">اللاعبون الحاليون:</p>
+          <ul>${b.players.map(p => `<li>${p.name} ${p.confirmed?'(مؤكد)':'(انتظار)'}</li>`).join('')}</ul>
+          <p class="mt-2 text-muted">باقي ${b.maxPlayers - b.players.length} أماكن شاغرة.</p>
+        </div>
+      `;
+      document.getElementById('joinPublicBtn').onclick = () => doJoin(b.bookingId);
+      document.getElementById('publicDetailsModal').classList.add('active');
+    }
+
+    async function doJoin(id) {
+      closeModal('publicDetailsModal');
+      Utils.showLoading('جاري الانضمام...');
       try {
         await BookingEngine.joinPublicBooking(id, currentUser.uid, currentUser.name);
-        Utils.showToast('تم الانضمام بنجاح! تم تأكيد حضورك تلقائياً', 'success');
+        Utils.hideLoading();
+        Utils.showToast('تمت إضافتك للحجز! يرجى تأكيد حضورك الآن من تبويب "دعوات"', 'info');
         loadAll();
-      } catch(e) {
-        Utils.showToast(e.message, 'error');
-      } finally {
-        loader.classList.remove('active');
-      }
+        setTimeout(() => switchMainTab('invited'), 1500);
+      } catch(e) { Utils.hideLoading(); Utils.showToast(e.message, 'error'); }
     }
 
-    function getIcon(s) { const m = { padel:'fa-table-tennis-paddle-ball', football:'fa-futbol', squash:'fa-table-tennis-paddle-ball', multi:'fa-basketball', beach:'fa-umbrella-beach' }; return m[s] || 'fa-star'; }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function getIcon(s) { const m = { padel:'fa-futbol', football:'fa-futbol', squash:'fa-table-tennis-paddle-ball', multi:'fa-basketball', beach:'fa-umbrella-beach' }; return m[s] || 'fa-star'; }
     function switchMainTab(id) {
-      document.querySelectorAll('#mainTabsList .booking-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      const idx = { active:0, invited:1, expired:2, public:3 }[id];
-      document.querySelectorAll('#mainTabsList .booking-tab')[idx].classList.add('active');
-      document.getElementById(id + '-tab').classList.add('active');
+      document.querySelector(`[onclick="switchMainTab('${id}')"]`).classList.add('active');
+      document.getElementById(`${id}-tab`).classList.add('active');
     }
-    function switchNestedTab(id) {
-      document.querySelectorAll('.nested-tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('nested-btn-' + id).classList.add('active');
-      document.getElementById('active-confirmed-content').style.display = id === 'confirmed' ? 'block' : 'none';
-      document.getElementById('active-pending-content').style.display = id === 'pending' ? 'block' : 'none';
+    function switchNestedTab(t) {
+      document.querySelectorAll('.nested-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(`nested-btn-${t}`).classList.add('active');
+      document.getElementById('active-confirmed-content').style.display = t === 'confirmed' ? 'block' : 'none';
+      document.getElementById('active-pending-content').style.display = t === 'pending' ? 'block' : 'none';
     }
   </script>
 </body>

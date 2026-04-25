@@ -511,17 +511,13 @@ const BookingEngine = {
           throw new Error('لا يمكنك الانضمام: لقد تجاوزت حدك اليومي لهذا التاريخ');
         }
 
-        // Add player
-        const newPlayers = [...b.players, { id: uid, name: userName, confirmed: true }];
+        // Add player (joining starts as unconfirmed)
+        const newPlayers = [...b.players, { id: uid, name: userName, confirmed: false }];
         
         const updates = { players: newPlayers };
-        // If now full, check if all confirmed (joining always confirms)
+        // Status only becomes active if full AND all confirmed
         if (newPlayers.length === b.maxPlayers && newPlayers.every(p => p.confirmed)) {
-          // Final overlap check
-          const existing = await this.getFieldBookings(b.fieldId, b.date);
-          const overlap = existing.some(ext => ext.bookingId !== b.bookingId && this._timesOverlap(b.startTime, b.endTime, ext.startTime, ext.endTime));
-          if (overlap) throw new Error('عذراً، هذا الموعد تم حجزه وتأكيده للتو من قبل فريق آخر');
-          
+          // ... rest of logic stays but it won't trigger since confirmed is false
           updates.status = 'active';
         }
 
@@ -533,8 +529,7 @@ const BookingEngine = {
       this._loadLocalBookings();
       const b = this._demoBookings.find(x => x.bookingId === bookingId);
       if (!b) throw new Error('الحجز غير موجود');
-      b.players.push({ id: uid, name: userName, confirmed: true });
-      if (b.players.length === b.maxPlayers) b.status = 'active';
+      b.players.push({ id: uid, name: userName, confirmed: false });
       Utils.saveLocal('bookings', this._demoBookings);
       return true;
     }
