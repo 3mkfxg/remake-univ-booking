@@ -139,7 +139,15 @@
     document.addEventListener('DOMContentLoaded', async () => {
       currentUser = AuthManager.getCurrentUser();
       if (!currentUser) { window.location.href = 'index.html'; return; }
-      loadAll();
+      
+      // Load data
+      await loadAll();
+
+      // Check URL for specific tab (e.g., ?tab=public)
+      const targetTab = Utils.getParam('tab');
+      if (targetTab) {
+        switchMainTab(targetTab);
+      }
     });
 
     async function loadAll() {
