@@ -78,6 +78,13 @@
           <span class="header-logo-text">جامعة الإسـراء</span>
         </a>
         <nav class="header-nav">
+          <div class="user-info-badge" id="headerUserBadge" style="display: none;">
+            <div class="user-details">
+              <span class="user-name" id="navUserName">جاري التحميل...</span>
+              <span class="user-id" id="navUserId">...</span>
+            </div>
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+          </div>
           <a href="dashboard.html">الرئيسية</a>
           <a href="dashboard.html">الملاعب</a>
           <a href="my-bookings.html" class="active">حجوزاتي</a>
@@ -140,6 +147,14 @@
       currentUser = AuthManager.getCurrentUser();
       if (!currentUser) { window.location.href = 'index.html'; return; }
       
+      // Update identity
+      const badge = document.getElementById('headerUserBadge');
+      if (badge) {
+        badge.style.display = 'flex';
+        document.getElementById('navUserName').textContent = currentUser.name;
+        document.getElementById('navUserId').textContent = currentUser.uid;
+      }
+
       // Load data
       await loadAll();
 

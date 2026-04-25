@@ -27,6 +27,15 @@
           <span class="header-logo-text">جامعة الإسـراء</span>
         </a>
         <nav class="header-nav" id="mainNav">
+          <!-- User info badge -->
+          <div class="user-info-badge" id="headerUserBadge" style="display: none;">
+            <div class="user-details">
+              <span class="user-name" id="navUserName">جاري التحميل...</span>
+              <span class="user-id" id="navUserId">...</span>
+            </div>
+            <div class="user-icon"><i class="fas fa-user"></i></div>
+          </div>
+
           <a href="dashboard.html">الرئيسية</a>
           <a href="dashboard.html" class="active">الملاعب</a>
           <a href="my-bookings.html">حجوزاتي</a>
@@ -151,6 +160,14 @@
       if (!user) {
         window.location.href = 'index.html';
         return;
+      }
+
+      // Update header identity
+      const badge = document.getElementById('headerUserBadge');
+      if (badge) {
+        badge.style.display = 'flex';
+        document.getElementById('navUserName').textContent = user.name;
+        document.getElementById('navUserId').textContent = user.uid;
       }
 
       // Update quota display
