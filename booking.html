@@ -36,25 +36,17 @@
           <a href="dashboard.html">الرئيسية</a>
           <a href="dashboard.html">الملاعب</a>
           <a href="my-bookings.html">حجوزاتي</a>
-          <a href="#" class="nav-logout" id="logoutBtn">
-            تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
-          </a>
+          <a href="#" class="nav-logout" id="logoutBtn">تسجيل الخروج</a>
         </nav>
-        <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
-          <i class="fas fa-bars"></i>
-        </button>
       </div>
     </header>
 
     <main class="page-content">
       <div class="booking-layout">
         <div class="booking-calendar-section">
-          <h2 class="text-brand mb-6">
-            <i class="fas fa-calendar-alt"></i>
-            اختر تاريخ ووقت الحجز
-          </h2>
+          <h2 class="text-brand mb-6"><i class="fas fa-calendar-alt"></i> اختر تاريخ ووقت الحجز</h2>
           
-          <div class="calendar" id="calendarContainer">
+          <div class="calendar">
             <div class="calendar-header">
               <h3 id="calendarMonth"></h3>
               <div class="calendar-nav">
@@ -75,14 +67,14 @@
 
           <div class="timeslots-section hidden" id="timeSlotsSection">
             <div class="divider"></div>
-            <h3 class="mb-4"><i class="fas fa-clock"></i> اختر الوقت — <span id="selectedDateDisplay"></span></h3>
+            <h3><i class="fas fa-clock"></i> <span id="selectedDateDisplay"></span></h3>
             <div class="timeslots-grid" id="timeSlotsGrid"></div>
           </div>
         </div>
 
         <div class="booking-sidebar">
           <div class="booking-field-info">
-            <img id="fieldImage" src="assets/fields/placeholder.jpg" alt="">
+            <img id="fieldImage" src="assets/fields/padel.jpg" alt="">
             <div>
               <div class="booking-field-name" id="fieldName">—</div>
               <div class="booking-field-sport" id="fieldSport">—</div>
@@ -91,65 +83,51 @@
 
           <div class="quota-indicator mb-4">
             <div style="width: 100%;">
-              <div class="flex-between mb-2">
-                <span style="font-size: var(--font-size-xs); font-weight: 600;" id="quotaLabel">الحصة اليومية</span>
-                <span class="quota-text" id="quotaText">0/1</span>
+              <div class="flex-between mb-1">
+                <span>الحصة اليومية</span>
+                <span id="quotaText">...</span>
               </div>
-              <div class="quota-bar"><div class="quota-bar-fill" id="quotaFill" style="width: 0%"></div></div>
+              <div class="quota-bar"><div class="quota-bar-fill" id="quotaFill"></div></div>
             </div>
           </div>
 
           <div class="hidden" id="playerSection">
             <div class="divider"></div>
-            <div class="player-entry">
-              <div class="player-entry-header">
-                <h3><i class="fas fa-users"></i> اللاعبون</h3>
-                <span class="player-count badge badge-info" id="playerCountBadge">0/0</span>
-              </div>
-              <div id="playerFields"></div>
-              
-              <div class="mt-4 p-3 bg-light rounded" style="background: rgba(0,0,0,0.03); border-radius: var(--radius-md);">
-                <label class="flex-between m-0 cursor-pointer">
-                  <div style="display: flex; align-items: center; gap: var(--space-2);">
-                    <i class="fas fa-globe-americas" style="color: var(--color-text-brand);"></i>
-                    <span style="font-size: var(--font-size-sm); font-weight: 600;">فتح الحجز للعامة</span>
-                  </div>
-                  <input type="checkbox" id="publicToggle" style="width: 18px; height: 18px; accent-color: var(--color-text-brand);">
-                </label>
-              </div>
+            <h3>اللاعبون <span id="playerCountBadge" class="badge badge-info"></span></h3>
+            <div id="playerFields" class="mt-4"></div>
+            
+            <div class="mt-4 p-3 bg-light rounded shadow-sm">
+              <label class="flex-between m-0 cursor-pointer">
+                <span>فتح الحجز للعامة</span>
+                <input type="checkbox" id="publicToggle">
+              </label>
             </div>
 
-            <div class="booking-summary" id="bookingSummary" style="display: none;">
-              <h4 class="text-brand mb-3"><i class="fas fa-receipt"></i> ملخص الحجز</h4>
-              <div class="booking-summary-row"><span>الملعب</span><span id="summaryField">—</span></div>
-              <div class="booking-summary-row"><span>التاريخ</span><span id="summaryDate">—</span></div>
-              <div class="booking-summary-row"><span>الوقت</span><span id="summaryTime">—</span></div>
-              <div class="booking-summary-row"><span>المدة</span><span id="summaryDuration">—</span></div>
-              <div class="booking-summary-row"><span id="summaryStatus">...</span></div>
+            <div id="bookingSummary" class="booking-summary mt-4" style="display:none;">
+              <h4 class="text-brand"><i class="fas fa-receipt"></i> ملخص</h4>
+              <div class="booking-summary-row"><span>الملعب</span><span id="summaryField"></span></div>
+              <div class="booking-summary-row"><span>الوقت</span><span id="summaryTime"></span></div>
+              <div class="booking-summary-row"><span>الحالة</span><span id="summaryStatus"></span></div>
             </div>
 
-            <button class="btn btn-primary btn-block btn-lg mt-4" id="confirmBookingBtn" disabled>تأكيد الحجز</button>
+            <button class="btn btn-primary btn-block mt-4" id="confirmBookingBtn" disabled>تأكيد الحجز</button>
           </div>
-
-          <div class="empty-state" id="initialPrompt">
-            <div class="empty-state-icon">📅</div>
-            <p>اختر تاريخاً ووقتاً</p>
+          
+          <div id="initialPrompt" class="text-center p-8">
+            <div style="font-size: 3rem; opacity: 0.3;">📅</div>
+            <p class="text-muted mt-2">يرجى اختيار موعد</p>
           </div>
         </div>
       </div>
     </main>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>جاري التحميل...</p></div>
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
   <div class="toast-container" id="toastContainer"></div>
   <div class="modal-overlay" id="confirmModal">
     <div class="modal">
-      <div class="modal-header"><h2>تأكيد الحجز</h2></div>
       <div class="modal-body" id="confirmModalBody"></div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="confirmModalCancel">إلغاء</button>
-        <button class="btn btn-primary" id="confirmModalOk">تأكيد</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" id="confirmModalCancel">إلغاء</button><button class="btn btn-primary" id="confirmModalOk">تأكيد</button></div>
     </div>
   </div>
 
@@ -160,12 +138,11 @@
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/booking.js"></script>
-  <script src="js/email.js"></script>
   <script>
     let currentField = null, selectedDate = null, selectedSlots = [], currentUser = null;
     let currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear();
 
-    const FIELD_IMAGES = { padel_a:'assets/fields/padel.jpg', padel_b:'assets/fields/padel.jpg', padel_c:'assets/fields/padel.jpg', padel_d:'assets/fields/padel.jpg', football_5v5:'assets/fields/football5.jpg', football_6v6:'assets/fields/football6.jpg', squash_a:'assets/fields/squash.jpg', multipurpose:'assets/fields/multi.jpg', beach:'assets/fields/beach.jpg' };
+    const IMAGES = { padel:'assets/fields/padel.jpg', football:'assets/fields/football5.jpg', squash:'assets/fields/squash.jpg', multi:'assets/fields/multi.jpg', beach:'assets/fields/beach.jpg' };
 
     document.addEventListener('DOMContentLoaded', () => {
       AuthManager.onAuthStateChanged(user => {
@@ -182,23 +159,24 @@
     });
 
     async function init() {
-      const fieldId = Utils.getParam('field');
+      const fieldId = (Utils.getParam('field') || '').toLowerCase();
       if (!fieldId || !BookingEngine.FIELDS[fieldId]) { window.location.href = 'dashboard.html'; return; }
+      
       currentField = { id: fieldId, ...BookingEngine.FIELDS[fieldId] };
       document.getElementById('fieldName').textContent = currentField.name;
       document.getElementById('fieldSport').textContent = BookingEngine.getSportName(currentField.sport);
-      document.getElementById('fieldImage').src = FIELD_IMAGES[fieldId] || 'assets/fields/placeholder.jpg';
+      document.getElementById('fieldImage').src = IMAGES[currentField.sport] || IMAGES.padel;
+      
       updateQuota();
       renderCalendar();
-      setupEventListeners();
+      setupHandlers();
     }
 
     async function updateQuota(date) {
-      if (!currentUser) return;
       const limit = AuthManager.getDailyLimit(currentUser.role);
       let used = await BookingEngine.getUsedHoursOnDate(currentUser.uid, date || Utils.today());
-      const label = document.getElementById('quotaLabel'), text = document.getElementById('quotaText'), fill = document.getElementById('quotaFill');
-      if (limit === Infinity) { label.textContent = 'حساب غير محدود'; text.textContent = '∞'; fill.style.width = '0%'; return; }
+      const text = document.getElementById('quotaText'), fill = document.getElementById('quotaFill');
+      if (limit === Infinity) { text.textContent = 'غير محدود'; fill.style.width = '0%'; return; }
       text.textContent = `${used}/${limit} ساعة`;
       fill.style.width = Math.min(100, (used/limit)*100) + '%';
     }
@@ -207,16 +185,19 @@
       const grid = document.getElementById('calendarGrid');
       const headers = Array.from(grid.querySelectorAll('.calendar-day-header'));
       grid.innerHTML = ''; headers.forEach(h => grid.appendChild(h));
-      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      document.getElementById('calendarMonth').textContent = `${months[currentMonth]} ${currentYear}`;
+      
+      const monNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      document.getElementById('calendarMonth').textContent = `${monNames[currentMonth]} ${currentYear}`;
+      
       const first = new Date(currentYear, currentMonth, 1).getDay(), days = new Date(currentYear, currentMonth + 1, 0).getDate();
       for (let i=0; i<first; i++) { const e = document.createElement('div'); e.className = 'calendar-day empty'; grid.appendChild(e); }
       const today = new Date(); today.setHours(0,0,0,0);
+      
       for (let d=1; d<=days; d++) {
         const ds = `${currentYear}-${(currentMonth+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
         const c = document.createElement('div'); c.className = 'calendar-day'; c.textContent = d;
         if (new Date(currentYear, currentMonth, d) < today) c.classList.add('disabled');
-        else c.addEventListener('click', () => selectDate(ds, c));
+        else c.onclick = () => selectDate(ds, c);
         if (selectedDate === ds) c.classList.add('selected');
         grid.appendChild(c);
       }
@@ -224,102 +205,93 @@
 
     async function selectDate(ds, c) {
       selectedDate = ds; selectedSlots = [];
-      document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+      document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
       c.classList.add('selected');
       document.getElementById('selectedDateDisplay').textContent = Utils.formatDate(ds);
       document.getElementById('timeSlotsSection').classList.remove('hidden');
-      await updateQuota(ds);
+      updateQuota(ds);
       renderTimeSlots(ds);
     }
 
     async function renderTimeSlots(date) {
-      const grid = document.getElementById('timeSlotsGrid');
-      grid.innerHTML = '<div class="spinner spinner-sm"></div>';
+      const g = document.getElementById('timeSlotsGrid');
+      g.innerHTML = '<div class="spinner spinner-sm"></div>';
       const slots = Utils.generateTimeSlots(currentField.open, currentField.close);
-      const existing = await BookingEngine.getFieldBookings(currentField.id, date);
-      grid.innerHTML = '';
+      const ex = await BookingEngine.getFieldBookings(currentField.id, date);
+      g.innerHTML = '';
       slots.forEach(s => {
-        const booked = existing.some(ext => BookingEngine._timesOverlap(s.startTime, s.endTime, ext.startTime, ext.endTime));
-        const div = document.createElement('div'); div.className = 'timeslot' + (booked ? ' booked' : ' available');
+        const booked = ex.some(b => BookingEngine._timesOverlap(s.startTime, s.endTime, b.startTime, b.endTime));
+        const div = document.createElement('div'); div.className = 'timeslot ' + (booked?'booked':'available');
         div.textContent = s.display;
-        if (!booked) div.addEventListener('click', () => {
+        if (!booked) div.onclick = () => {
           selectedSlots = [s];
           document.querySelectorAll('.timeslot').forEach(t => t.classList.remove('selected'));
           div.classList.add('selected');
           updateSidebar();
-        });
-        grid.appendChild(div);
+        };
+        g.appendChild(div);
       });
     }
 
     function updateSidebar() {
-      const has = selectedSlots.length > 0;
-      document.getElementById('playerSection').classList.toggle('hidden', !has);
-      document.getElementById('initialPrompt').classList.toggle('hidden', has);
-      if (has) {
+      const ok = selectedSlots.length > 0;
+      document.getElementById('playerSection').classList.toggle('hidden', !ok);
+      document.getElementById('initialPrompt').classList.toggle('hidden', ok);
+      if (ok) {
         document.getElementById('bookingSummary').style.display = 'block';
         document.getElementById('summaryField').textContent = currentField.name;
-        document.getElementById('summaryDate').textContent = Utils.formatDate(selectedDate);
         document.getElementById('summaryTime').textContent = selectedSlots[0].display;
-        renderPlayerFields();
+        renderPlayers();
       }
     }
 
-    function renderPlayerFields() {
-      const container = document.getElementById('playerFields');
-      container.innerHTML = '';
+    function renderPlayers() {
+      const c = document.getElementById('playerFields'); c.innerHTML = '';
+      document.getElementById('playerCountBadge').textContent = `${currentField.players} لاعبين`;
       for (let i=0; i<currentField.players; i++) {
-        const row = document.createElement('div'); row.className = 'player-row';
-        const input = document.createElement('input'); input.className = 'form-input player-id-input';
-        input.placeholder = `رقم اللاعب ${i+1}`;
-        if (i===0) { input.value = currentUser.uid; input.readOnly = true; }
-        input.addEventListener('input', checkAllPlayersValid);
-        row.appendChild(input); container.appendChild(row);
+        const inp = document.createElement('input'); inp.className = 'form-input player-id-input mb-2';
+        inp.placeholder = `رقم اللاعب ${i+1}`;
+        if (i===0) { inp.value = currentUser.uid; inp.readOnly = true; }
+        inp.oninput = checkValid;
+        c.appendChild(inp);
       }
-      checkAllPlayersValid();
+      checkValid();
     }
 
-    function checkAllPlayersValid() {
-      const inputs = document.querySelectorAll('.player-id-input');
+    function checkValid() {
+      const inps = document.querySelectorAll('.player-id-input');
       const isPublic = document.getElementById('publicToggle').checked;
-      let ok = true, filled = 0;
-      inputs.forEach(inp => { if (inp.value.trim()) filled++; else if (!isPublic) ok = false; });
-      document.getElementById('confirmBookingBtn').disabled = !ok || filled < 1;
+      let valid = true, fill = 0;
+      inps.forEach(i => { if (i.value.trim()) fill++; else if (!isPublic) valid = false; });
+      document.getElementById('confirmBookingBtn').disabled = !valid || fill < 1;
     }
 
-    function setupEventListeners() {
-      document.getElementById('logoutBtn').onclick = () => { AuthManager.logout(); window.location.href='index.html'; };
+    function setupHandlers() {
       document.getElementById('prevMonth').onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11;currentYear--;} renderCalendar(); };
       document.getElementById('nextMonth').onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0;currentYear++;} renderCalendar(); };
-      document.getElementById('publicToggle').onchange = checkAllPlayersValid;
-      document.getElementById('confirmBookingBtn').onclick = showConfirmModal;
+      document.getElementById('logoutBtn').onclick = () => { AuthManager.logout(); window.location.href='index.html'; };
+      document.getElementById('publicToggle').onchange = checkValid;
+      document.getElementById('confirmBookingBtn').onclick = () => {
+        document.getElementById('confirmModalBody').innerHTML = `<p>تأكيد حجز <b>${currentField.name}</b> يوم <b>${Utils.formatDate(selectedDate)}</b> الساعة <b>${selectedSlots[0].display}</b>؟</p>`;
+        document.getElementById('confirmModal').classList.add('active');
+      };
       document.getElementById('confirmModalCancel').onclick = () => document.getElementById('confirmModal').classList.remove('active');
-      document.getElementById('confirmModalOk').onclick = submitBooking;
+      document.getElementById('confirmModalOk').onclick = doBooking;
     }
 
-    function showConfirmModal() {
-      const b = document.getElementById('confirmModalBody');
-      b.innerHTML = `<p>الملعب: ${currentField.name}</p><p>التاريخ: ${Utils.formatDate(selectedDate)}</p><p>الوقت: ${selectedSlots[0].display}</p>`;
-      document.getElementById('confirmModal').classList.add('active');
-    }
-
-    async function submitBooking() {
+    async function doBooking() {
       Utils.showLoading('جاري الحجز...');
       try {
-        const players = [];
-        for (const input of document.querySelectorAll('.player-id-input')) {
-          const val = input.value.trim().toLowerCase();
-          if (val) {
-            const u = await AuthManager.getUserById(val);
-            players.push({ id: val, name: u?u.name:val, email: u?u.email:`${val}@iu.edu.jo` });
-          }
-        }
+        const p = Array.from(document.querySelectorAll('.player-id-input')).map(i => i.value.trim().toLowerCase()).filter(v => v);
+        const players = await Promise.all(p.map(async id => {
+          const u = await AuthManager.getUserById(id);
+          return { id, name: u?u.name:id, email: u?u.email:`${id}@iu.edu.jo` };
+        }));
         const b = await BookingEngine.createBooking({
           fieldId: currentField.id, date: selectedDate, startTime: selectedSlots[0].startTime, endTime: selectedSlots[0].endTime, duration: 1, bookedBy: currentUser.uid, isPublic: document.getElementById('publicToggle').checked, players
         });
-        await EmailService.sendBookingConfirmation(b);
         window.location.href = `confirmation.html?id=${b.bookingId}`;
-      } catch(e) { Utils.hideLoading(); Utils.showToast(e.message, 'error'); }
+      } catch(ex) { Utils.hideLoading(); alert(ex.message); }
     }
   </script>
 </body>
