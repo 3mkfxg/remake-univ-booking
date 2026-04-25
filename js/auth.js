@@ -312,6 +312,27 @@ const AuthManager = {
       default: 
         return 1;
     }
+  },
+
+  // ── Auth State Change Bridge ──
+  onAuthStateChanged(callback) {
+    // Current user from session (immediate sync)
+    const currentUser = this.getCurrentUser();
+    
+    if (isFirebaseConfigured()) {
+      // Firebase listener
+      auth.onAuthStateChanged(async (firebaseUser) => {
+        if (firebaseUser) {
+          const userData = await this.getUserById(firebaseUser.uid);
+          callback(userData || currentUser);
+        } else {
+          callback(currentUser);
+        }
+      });
+    } else {
+      // Local demo mode
+      setTimeout(() => callback(currentUser), 0);
+    }
   }
 };
 
