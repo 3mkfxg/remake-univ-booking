@@ -69,6 +69,21 @@
             <div class="divider"></div>
             <h3><i class="fas fa-clock"></i> <span id="selectedDateDisplay"></span></h3>
             <div class="timeslots-grid" id="timeSlotsGrid"></div>
+            
+            <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; margin-top: var(--space-6); font-size: 0.85rem; font-weight: 600;">
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <div style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--color-status-verified); background: transparent;"></div>
+                <span style="color: var(--color-status-verified);">وقت متاح</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <div style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--color-action-danger); background: rgba(220,53,69,0.1);"></div>
+                <span style="color: var(--color-action-danger);">محجوز مسبقاً</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <div style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #60a5fa; background: #93c5fd;"></div>
+                <span style="color: #4f91fcda;">حجزك الخاص</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -218,12 +233,29 @@
       g.innerHTML = '<div class="spinner spinner-sm"></div>';
       const slots = Utils.generateTimeSlots(currentField.open, currentField.close);
       const ex = await BookingEngine.getFieldBookings(currentField.id, date);
+      
+      const allMyBookings = await BookingEngine.getUserBookings(currentUser.uid);
+      const myBookingsToday = allMyBookings.filter(b => b.date === date);
+
       g.innerHTML = '';
       slots.forEach(s => {
-        const booked = ex.some(b => BookingEngine._timesOverlap(s.startTime, s.endTime, b.startTime, b.endTime));
-        const div = document.createElement('div'); div.className = 'timeslot ' + (booked?'booked':'available');
+        const fieldBooked = ex.some(b => BookingEngine._timesOverlap(s.startTime, s.endTime, b.startTime, b.endTime));
+        const bookedByMe = myBookingsToday.some(b => BookingEngine._timesOverlap(s.startTime, s.endTime, b.startTime, b.endTime));
+        
+        const isBooked = fieldBooked || bookedByMe;
+        
+        const div = document.createElement('div'); 
+        div.className = 'timeslot ' + (isBooked ? 'booked' : 'available');
         div.textContent = s.display;
-        if (!booked) div.onclick = () => {
+        
+        if (bookedByMe) {
+          div.style.backgroundColor = '#93c5fd';
+          div.style.color = '#1e3a8a';
+          div.style.borderColor = '#60a5fa';
+          div.title = 'لديك حجز في هذا الوقت';
+        }
+
+        if (!isBooked) div.onclick = () => {
           selectedSlots = [s];
           document.querySelectorAll('.timeslot').forEach(t => t.classList.remove('selected'));
           div.classList.add('selected');
@@ -245,17 +277,71 @@
       }
     }
 
+    const debounceTimers = {};
+
     function renderPlayers() {
       const c = document.getElementById('playerFields'); c.innerHTML = '';
       document.getElementById('playerCountBadge').textContent = `${currentField.players} لاعبين`;
       for (let i=0; i<currentField.players; i++) {
-        const inp = document.createElement('input'); inp.className = 'form-input player-id-input mb-2';
-        inp.placeholder = `رقم اللاعب ${i+1}`;
-        if (i===0) { inp.value = currentUser.uid; inp.readOnly = true; }
-        inp.oninput = checkValid;
-        c.appendChild(inp);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'player-input-wrapper mb-2';
+        wrapper.style.position = 'relative';
+
+        const inp = document.createElement('input'); 
+        inp.className = 'form-input player-id-input w-100';
+        inp.placeholder = `الرقم الجامعي للاعب ${i+1}`;
+        inp.dataset.index = i;
+        
+        const icon = document.createElement('i');
+        icon.className = 'fas hidden';
+        icon.style.position = 'absolute';
+        icon.style.left = '12px';
+        icon.style.top = '50%';
+        icon.style.transform = 'translateY(-50%)';
+        
+        if (i===0) { 
+          inp.value = currentUser.uid; 
+          inp.readOnly = true; 
+          icon.className = 'fas fa-check';
+          icon.style.color = 'var(--color-status-verified)';
+        }
+        
+        inp.oninput = () => {
+          checkValid();
+          validatePlayerRealtime(inp, icon);
+        };
+        
+        wrapper.appendChild(inp);
+        wrapper.appendChild(icon);
+        c.appendChild(wrapper);
       }
       checkValid();
+    }
+
+    async function validatePlayerRealtime(inp, icon) {
+      if (inp.readOnly) return;
+      const id = inp.value.trim().toLowerCase();
+      const pId = inp.dataset.index;
+      
+      if (!id) {
+        icon.className = 'fas hidden';
+        return;
+      }
+      
+      icon.className = 'fas fa-spinner fa-spin';
+      icon.style.color = 'var(--color-text-muted)';
+      
+      clearTimeout(debounceTimers[pId]);
+      debounceTimers[pId] = setTimeout(async () => {
+        const u = await AuthManager.getUserById(id);
+        if (u) {
+          icon.className = 'fas fa-check';
+          icon.style.color = 'var(--color-status-verified)';
+        } else {
+          icon.className = 'fas fa-times';
+          icon.style.color = 'var(--color-action-danger)';
+        }
+      }, 400);
     }
 
     function checkValid() {
@@ -285,7 +371,10 @@
         const p = Array.from(document.querySelectorAll('.player-id-input')).map(i => i.value.trim().toLowerCase()).filter(v => v);
         const players = await Promise.all(p.map(async id => {
           const u = await AuthManager.getUserById(id);
-          return { id, name: u?u.name:id, email: u?u.email:`${id}@iu.edu.jo` };
+          if (!u) {
+            throw new Error(`لم يتم العثور على حساب بالرقم الجامعي: ${id}`);
+          }
+          return { id, name: u.name, email: u.email };
         }));
         const b = await BookingEngine.createBooking({
           fieldId: currentField.id, date: selectedDate, startTime: selectedSlots[0].startTime, endTime: selectedSlots[0].endTime, duration: 1, bookedBy: currentUser.uid, isPublic: document.getElementById('publicToggle').checked, players

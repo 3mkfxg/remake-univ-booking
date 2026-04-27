@@ -16,8 +16,8 @@ const BookingEngine = {
     football_6v6: { name: 'ملعب كرة القدم السداسي', sport: 'football', players: 12, open: '08:00', close: '16:00' },
     squash_a: { name: 'ملعب سكواتش A', sport: 'squash', players: 2, open: '08:00', close: '16:00' },
     squash_b: { name: 'ملعب سكواتش B', sport: 'squash', players: 2, open: '08:00', close: '16:00' },
-    multipurpose: { name: 'ملعب متعدد الاستخدام', sport: 'multi', players: 10, open: '08:00', close: '16:00' },
-    beach: { name: 'ملعب شاطئي', sport: 'beach', players: 8, open: '08:00', close: '16:00' }
+    multipurpose: { name: 'ملعب متعدد الاستخدام', sport: 'multi', players: 4, open: '08:00', close: '16:00' },
+    beach: { name: 'ملعب شاطئي', sport: 'beach', players: 4, open: '08:00', close: '16:00' }
   },
 
   // ── Sport display names ──

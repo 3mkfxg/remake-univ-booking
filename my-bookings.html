@@ -132,6 +132,21 @@
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p>جاري المعالجة...</p></div>
   <div class="toast-container" id="toastContainer"></div>
 
+  <!-- Custom Confirm Modal -->
+  <div class="modal-overlay" id="confirmJoinModal">
+    <div class="modal" style="max-width: 350px; text-align: center; padding: var(--space-6);">
+      <div style="font-size: 3.5rem; color: var(--color-text-brand); margin-bottom: var(--space-4);">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h3 style="margin-bottom: var(--space-2); font-size: 1.4rem;">تأكيد الانضمام</h3>
+      <p class="text-muted" style="margin-bottom: var(--space-6); line-height: 1.6;">هل أنت متأكد من الانضمام وتأكيد حضورك لهذا الفريق؟</p>
+      <div style="display: flex; gap: var(--space-3); justify-content: center;">
+        <button class="btn btn-secondary" onclick="closeJoinModal()" style="flex: 1;">إلغاء</button>
+        <button class="btn btn-primary" onclick="executeJoinBooking()" style="flex: 1;">نعم، متأكد</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -252,15 +267,29 @@
                  <span style="font-size: var(--font-size-sm);"><i class="far fa-clock"></i> ${Utils.formatTime(b.startTime)}</span>
               </div>
               <div class="slot-indicator">${dots.join('')}</div>
-              <button class="btn btn-primary btn-block mt-4" onclick="joinBooking('${b.bookingId}')">انضم للفريق</button>
+              <button class="btn btn-primary btn-block mt-4" onclick="openJoinModal('${b.bookingId}')">انضم للفريق</button>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    async function joinBooking(id) {
-      if (!confirm('هل أنت متأكد من الانضمام وتأكيد حضورك لهذا الفريق؟')) return;
+    let pendingJoinId = null;
+
+    function openJoinModal(id) {
+      pendingJoinId = id;
+      document.getElementById('confirmJoinModal').classList.add('active');
+    }
+
+    function closeJoinModal() {
+      pendingJoinId = null;
+      document.getElementById('confirmJoinModal').classList.remove('active');
+    }
+
+    async function executeJoinBooking() {
+      if (!pendingJoinId) return;
+      const id = pendingJoinId;
+      closeJoinModal();
       
       const loader = document.getElementById('loadingOverlay');
       loader.classList.add('active');

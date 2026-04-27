@@ -192,12 +192,25 @@
 
       const allConfirmed = booking.players.every(p => p.confirmed);
       const isCancelled = booking.status === 'cancelled';
+      const isPublic = booking.isPublic;
+      const isFull = booking.players.length >= booking.maxPlayers;
+      const missingCount = booking.maxPlayers - booking.players.length;
 
       let statusColor, statusIcon, statusText;
       if (isCancelled) {
         statusColor = 'var(--color-action-danger)';
         statusIcon = 'ban';
         statusText = 'ملغي';
+      } else if (!isFull) {
+        statusColor = 'var(--color-action-warning)';
+        statusIcon = 'hourglass-half';
+        const missingPhrases = { 1: 'لاعب واحد', 2: 'لاعبين اثنين' };
+        const missingText = missingPhrases[missingCount] || `${missingCount} لاعبين`;
+        statusText = `غير مكتمل (بانتظار ${missingText})`;
+      } else if (isPublic) {
+        statusColor = 'var(--color-status-verified)';
+        statusIcon = 'check-circle';
+        statusText = 'نشط';
       } else if (allConfirmed) {
         statusColor = 'var(--color-status-verified)';
         statusIcon = 'check-circle';
@@ -206,6 +219,15 @@
         statusColor = 'var(--color-action-warning)';
         statusIcon = 'exclamation-triangle';
         statusText = 'غير مؤكد بالكامل';
+      }
+
+      // Format date as dd-mm-yyyy explicitly
+      let formattedDate = booking.date;
+      if (booking.date && booking.date.includes('-')) {
+        const parts = booking.date.split('-');
+        if (parts.length === 3) {
+          formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
       }
 
       resultDiv.innerHTML = `
@@ -223,18 +245,28 @@
             </div>
             <div class="detail-row">
               <span class="detail-label">التاريخ</span>
-              <span class="detail-value">${Utils.formatDate(booking.date)}</span>
+              <span class="detail-value" dir="ltr" style="display: inline-block;">${formattedDate}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">الوقت</span>
-              <span class="detail-value">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span>
+              <span class="detail-value" dir="ltr" style="display: inline-block;">${Utils.formatTime(booking.startTime)} - ${Utils.formatTime(booking.endTime)}</span>
             </div>
-            <div class="divider"></div>
-            <h4 style="margin-bottom: var(--space-2);">اللاعبون:</h4>
+            <div class="divider" style="margin: var(--space-4) 0;"></div>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: bold; color: var(--color-text-main);">اللاعبون</h3>
+              <i class="fas fa-user-friends" style="font-size: 1.2rem; color: var(--color-text-main);"></i>
+            </div>
+            
             ${booking.players.map(p => `
-              <div style="display:flex; justify-content:space-between; padding:var(--space-2) 0; border-bottom:1px solid var(--color-border-light);">
-                <span>${p.name} (${p.id})</span>
-                <span class="badge ${p.confirmed ? 'badge-success' : 'badge-danger'}">${p.confirmed ? '✓' : '✗'}</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; background: var(--color-bg-base); padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); margin-bottom:var(--space-2);">
+                <div style="font-weight: 500; display:flex; align-items:center;">
+                  <span style="color:var(--color-text-muted); margin-left:var(--space-2); font-size: 0.9em;">(${p.id})</span> 
+                  <span style="color: var(--color-text-main); font-weight: 600;">${p.name}</span>
+                </div>
+                <span class="badge ${p.confirmed ? 'badge-success' : 'badge-danger'}" style="padding: 0.4rem 0.8rem; border-radius: 100px; font-weight: bold; display:inline-block;">
+                  ${p.confirmed ? 'مؤكد ✓' : 'غير مؤكد ✗'}
+                </span>
               </div>
             `).join('')}
           </div>
