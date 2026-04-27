@@ -195,7 +195,7 @@
           <td style="white-space: nowrap;">${Utils.formatTime(b.startTime)} - ${Utils.formatTime(b.endTime)}</td>
           <td>${b.bookedBy}</td>
           <td style="font-size: var(--font-size-xs);">${b.players.map(p => p.name).join(', ')}</td>
-          <td><span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">${b.status === 'active' ? 'نشط' : 'ملغي'}</span></td>
+          <td><span class="badge ${b.status === 'active' ? 'badge-success' : (b.status === 'cancelled' ? 'badge-danger' : 'badge-warning')}">${b.status === 'active' ? 'نشط' : (b.status === 'cancelled' ? 'ملغي' : 'غير مكتمل')}</span></td>
           <td>
             '—'
           </td>

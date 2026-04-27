@@ -4,41 +4,7 @@
 
 const BookingEngine = {
   // ── Local booking storage (demo mode) ──
-  _demoBookings: [
-    {
-      bookingId: 'PUBLIC-PADEL-1',
-      fieldName: 'ملعب البادل A',
-      sportType: 'padel',
-      date: '2026-04-26', // Updated to match user's current date
-      startTime: '16:00',
-      endTime: '17:00',
-      duration: 1,
-      bookedBy: 'st2005',
-      players: [
-        { id: 'st2005', name: 'فارس النابلسي', confirmed: true },
-        { id: 'st2006', name: 'كريم الزعبي', confirmed: true }
-      ],
-      maxPlayers: 4,
-      isPublic: true,
-      status: 'active'
-    },
-    {
-      bookingId: 'PUBLIC-FOOT-1',
-      fieldName: 'ملعب كرة القدم الخماسي',
-      sportType: 'football',
-      date: '2026-04-27',
-      startTime: '10:00',
-      endTime: '11:00',
-      duration: 1,
-      bookedBy: 'st2001',
-      players: [
-        { id: 'st2001', name: 'سامي العبادي', confirmed: true }
-      ],
-      maxPlayers: 10,
-      isPublic: true,
-      status: 'active'
-    }
-  ],
+  _demoBookings: [],
 
   // ── Fields data ──
   FIELDS: {
@@ -386,9 +352,10 @@ const BookingEngine = {
         
         // Check if all players are now confirmed
         const allConfirmed = booking.players.every(p => p.confirmed);
+        const isFull = booking.players.length === booking.maxPlayers;
         const updates = { players: booking.players };
         
-        if (allConfirmed) {
+        if (allConfirmed && isFull) {
           // FINAL CHECK: Did someone else take this slot while we were confirming?
           const existing = await this.getFieldBookings(booking.fieldId, booking.date);
           const overlap = existing.some(ext => 
@@ -425,7 +392,9 @@ const BookingEngine = {
       
       // Check if all players are now confirmed
       const allConfirmed = booking.players.every(p => p.confirmed);
-      if (allConfirmed) {
+      const isFull = booking.players.length === booking.maxPlayers;
+      
+      if (allConfirmed && isFull) {
         // FINAL CHECK: Overlap check for demo
         const existing = await this.getFieldBookings(booking.fieldId, booking.date);
         const overlap = existing.some(ext => 
@@ -473,14 +442,16 @@ const BookingEngine = {
     if (isFirebaseConfigured()) {
       try {
         const snapshot = await db.collection(Collections.BOOKINGS)
-          .where('date', '>=', today)
           .where('isPublic', '==', true)
           .get();
         
         return snapshot.docs
           .map(doc => doc.data())
-          .filter(b => b.isPublic === true && b.status !== 'cancelled' && b.players.length < b.maxPlayers);
-      } catch(e) { return []; }
+          .filter(b => b.date >= today && b.status !== 'cancelled' && b.players.length < b.maxPlayers);
+      } catch(e) { 
+        console.error("Error fetching public bookings:", e); 
+        return []; 
+      }
     } else {
       this._loadLocalBookings();
       return this._demoBookings.filter(b => 
@@ -504,22 +475,25 @@ const BookingEngine = {
         if (b.players.some(p => p.id.toLowerCase() === uid)) throw new Error('أنت مشارك بالفعل في هذا الحجز');
 
         // Check Quota
-        const role = await AuthManager.getUserRole(uid);
+        const userRec = await AuthManager.getUserById(uid);
+        const role = userRec ? userRec.role : 'student';
         const limit = AuthManager.getDailyLimit(role);
         const used = await this.getUsedHoursOnDate(uid, b.date);
         if (used + b.duration > limit && limit !== Infinity) {
           throw new Error('لا يمكنك الانضمام: لقد تجاوزت حدك اليومي لهذا التاريخ');
         }
 
-        // Add player (joining automatically confirms for faster experience)
+        // Add player
         const newPlayers = [...b.players, { id: uid, name: userName, confirmed: true }];
         
         const updates = { players: newPlayers };
-        // If full, mark as active
+        // If now full, check if all confirmed (joining always confirms)
         if (newPlayers.length === b.maxPlayers && newPlayers.every(p => p.confirmed)) {
+          // Final overlap check
           const existing = await this.getFieldBookings(b.fieldId, b.date);
           const overlap = existing.some(ext => ext.bookingId !== b.bookingId && this._timesOverlap(b.startTime, b.endTime, ext.startTime, ext.endTime));
-          if (overlap) throw new Error('تم حجز الملعب بالكامل بالفعل');
+          if (overlap) throw new Error('عذراً، هذا الموعد تم حجزه وتأكيده للتو من قبل فريق آخر');
+          
           updates.status = 'active';
         }
 

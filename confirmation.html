@@ -191,8 +191,8 @@
         <div class="detail-row">
           <span class="detail-label">الحالة</span>
           <span class="detail-value">
-            <span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">
-              ${b.status === 'active' ? 'نشط' : 'ملغي'}
+            <span class="badge ${b.status === 'active' ? 'badge-success' : (b.status === 'cancelled' ? 'badge-danger' : 'badge-warning')}">
+              ${b.status === 'active' ? 'نشط' : (b.status === 'cancelled' ? 'ملغي' : 'غير مكتمل (بانتظار لاعبين)')}
             </span>
           </span>
         </div>

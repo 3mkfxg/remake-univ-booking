@@ -134,7 +134,7 @@
             <td>${Utils.formatDate(b.date)}</td>
             <td>${Utils.formatTime(b.startTime)} - ${Utils.formatTime(b.endTime)}</td>
             <td>${b.bookedBy}</td>
-            <td><span class="badge ${b.status === 'active' ? 'badge-success' : 'badge-danger'}">${b.status === 'active' ? 'نشط' : 'ملغي'}</span></td>
+            <td><span class="badge ${b.status === 'active' ? 'badge-success' : (b.status === 'cancelled' ? 'badge-danger' : 'badge-warning')}">${b.status === 'active' ? 'نشط' : (b.status === 'cancelled' ? 'ملغي' : 'غير مكتمل')}</span></td>
           </tr>
         `).join('');
       }

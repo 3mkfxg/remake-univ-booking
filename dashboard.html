@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="لوحة التحكم - نظام حجز ملاعب جامعة الإسراء">
-  <title>لوحة التحكم | نظام حجز الملاعب</title>
+  <meta name="description" content="اختر ملعبك المفضل - نظام حجز ملاعب جامعة الإسراء">
+  <title>اختر ملعبك المفضل | نظام حجز الملاعب</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
 </head>
 <body>
   <div class="page-wrapper">
+    <!-- ── Header ── -->
     <header class="site-header">
       <div class="header-inner">
         <a href="dashboard.html" class="header-logo">
@@ -26,6 +27,7 @@
           <span class="header-logo-text">جامعة الإسـراء</span>
         </a>
         <nav class="header-nav" id="mainNav">
+          <!-- User info badge -->
           <div class="user-info-badge" id="headerUserBadge" style="display: none;">
             <div class="user-details">
               <span class="user-name" id="navUserName">جاري التحميل...</span>
@@ -33,8 +35,9 @@
             </div>
             <div class="user-icon"><i class="fas fa-user"></i></div>
           </div>
-          <a href="dashboard.html" class="active">الرئيسية</a>
-          <a href="dashboard.html">الملاعب</a>
+
+          <a href="dashboard.html">الرئيسية</a>
+          <a href="dashboard.html" class="active">الملاعب</a>
           <a href="my-bookings.html">حجوزاتي</a>
           <a href="#" class="nav-logout" id="logoutBtn">
             تسجيل الخروج <i class="fas fa-sign-out-alt"></i>
@@ -46,67 +49,85 @@
       </div>
     </header>
 
+    <!-- ── Main Content ── -->
     <main class="page-content">
       <div class="container">
-        <!-- Dashboard Hero / News -->
-        <section class="mb-10">
-          <div class="grid grid-2 gap-8">
-            <!-- Quota Status -->
-            <div class="stat-card" style="text-align: right; padding: var(--space-8);">
-              <h2 class="text-brand mb-4">أهلاً بك في نظام الحجز</h2>
-              <div class="quota-indicator" style="background: none; padding: 0; box-shadow: none;">
-                <div style="width: 100%;">
-                  <div class="flex-between mb-3">
-                    <span id="quotaLabel" style="font-weight: 700;">جاري تحميل الحصة...</span>
-                    <span class="quota-text" id="quotaText" style="font-size: var(--font-size-md); font-weight: 700;">-/-</span>
-                  </div>
-                  <div class="quota-bar" style="height: 12px; background: rgba(0,0,0,0.05);">
-                    <div class="quota-bar-fill" id="quotaFill" style="width: 0%"></div>
-                  </div>
-                </div>
-              </div>
+        <!-- User Quota Info -->
+        <div class="quota-indicator mb-6" id="quotaSection" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+          <div style="flex: 1;">
+            <div class="flex-between mb-2">
+              <span style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);" id="quotaLabel">الحصة اليومية المتبقية</span>
+              <span class="quota-text" id="quotaText">0/1 ساعة</span>
             </div>
-
-            <!-- Discovery Card -->
-            <div class="stadium-card" style="background: linear-gradient(135deg, var(--color-brand-primary), #a52a2a); color: white; border: none;">
-              <div class="card-body" style="padding: var(--space-8);">
-                <span class="badge badge-warning mb-2" style="background: #ffd700; color: #800000; font-weight: 700;">جديد</span>
-                <h3 class="card-title text-white" style="font-size: var(--font-size-xl); margin-bottom: var(--space-2);">انضم لمباراة مفتوحة!</h3>
-                <p style="opacity: 0.9; margin-bottom: var(--space-4);">هناك ملاعب بانتظار لاعبين مثلك. انضم الآن وأكمل الفريق لتلعب اليوم.</p>
-                <a href="my-bookings.html?tab=public" class="btn btn-secondary" style="background: white; color: var(--color-brand-primary); border: none; font-weight: 700;">
-                  <i class="fas fa-search"></i> استعرض الحجوزات العامة
-                </a>
-              </div>
+            <div class="quota-bar">
+              <div class="quota-bar-fill" id="quotaFill" style="width: 0%"></div>
             </div>
           </div>
-        </section>
+        </div>
 
-        <!-- Stadium Listings -->
-        <section class="section">
-          <div class="section-title">ملاعب الجامعة</div>
-          <div class="stadiums-grid" id="stadiumsGrid">
-            <!-- Dynamic listing -->
-          </div>
-        </section>
+        <!-- Public Booking Discovery Link -->
+        <div class="mb-8" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+          <a href="my-bookings.html?tab=public" class="card" style="display: flex; align-items: center; gap: var(--space-4); text-decoration: none; padding: var(--space-4); background: linear-gradient(135deg, var(--color-text-brand), #a31d1d); color: white; border: none;">
+            <div style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div style="flex: 1;">
+              <h3 style="margin: 0; font-size: var(--font-size-md); font-weight: 700;">هل تبحث عن فريق؟</h3>
+              <p style="margin: 0; font-size: var(--font-size-xs); opacity: 0.9;">انضم إلى الحجوزات العامة المفتوحة الآن</p>
+            </div>
+            <i class="fas fa-chevron-left" style="opacity: 0.7;"></i>
+          </a>
+        </div>
+
+        <!-- Section Title -->
+        <h1 class="section-title">اختر ملعبك المفضل</h1>
+
+        <!-- Stadiums Grid -->
+        <div class="stadiums-grid" id="stadiumsGrid">
+          <!-- Cards will be populated by JS -->
+        </div>
       </div>
     </main>
 
+    <!-- ── Footer ── -->
     <footer class="site-footer">
-      <div class="footer-copyright">جميع الحقوق محفوظة مركز الحاسوب © 2025</div>
+      <!--
+      <div class="footer-copyright">
+        جميع الحقوق محفوظة مركز الحاسوب © 2025
+      </div>
       <div class="footer-social">
-        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
-        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
-        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/israuniversity/" target="_blank" rel="noopener" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        -->
+        <div class="footer-copyright">
+        made by
+      </div>
+        <a href="https://www.instagram.com/3mk_f_x_g/" target="_blank" rel="noopener" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <!--
+        <a href="https://twitter.com/IsraUniversity" target="_blank" rel="noopener" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.facebook.com/Isra.University.Jordan/" target="_blank" rel="noopener" aria-label="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        -->
       </div>
     </footer>
   </div>
 
+  <!-- Loading -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
     <p>جاري تحميل الملاعب...</p>
   </div>
+
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <!-- Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -116,79 +137,130 @@
   <script src="js/auth.js"></script>
   <script src="js/booking.js"></script>
   <script>
+    // Descriptions for fields
     const FIELD_DESC = {
-      padel: 'البادل هي رياضة تجمع بين التنس والاسكواش، تلعب في ملعب مغلق بجدران زجاجية.',
-      football: 'استمتع بلعبة كرة القدم في ملاعبنا العشبية المجهزة بإضاءة ليلية ممتازة.',
-      squash: 'رياضة الاسكواش تمنحك لياقة عالية وتحدياً كبيراً في ملاعبنا المغلقة.',
-      multi: 'ملعب متعدد الأغراض لممارسة كرة السلة والكرة الطائرة.',
-      beach: 'ملاعب رملية لممارسة الكرة الطائرة الشاطئية في أجواء مميزة.'
+      padel: 'البادل هي رياضة تجمع بين التنس والاسكواش، تلعب في ملعب مغلق بجدران زجاجية وتعتمد على المهارة والسرعة.',
+      football: 'استمتع بلعبة كرة القدم في ملاعبنا العشبية المجهزة بأعلى المواصفات وإضاءة ليلية ممتازة.',
+      squash: 'رياضة الاسكواش تمنحك لياقة عالية وتحدياً كبيراً في ملاعبنا المغلقة والمكيفة.',
+      multi: 'ملعب متعدد الأغراض لممارسة كرة السلة، الكرة الطائرة، وغيرها من الرياضات الجماعية.',
+      beach: 'ملاعب رملية لممارسة الكرة الطائرة الشاطئية وكرة القدم الشاطئية في أجواء مميزة.'
     };
 
+    // Load fields from engine
     const ALL_FIELDS = Object.keys(BookingEngine.FIELDS).map(id => {
       const f = BookingEngine.FIELDS[id];
-      let img = id.split('_')[0];
-      if (id === 'football_5v5') img = 'football5';
-      if (id === 'football_6v6') img = 'football6';
-      if (id === 'multipurpose') img = 'multi';
-      return { id, name: f.name, description: FIELD_DESC[f.sport] || '', image: `assets/fields/${img}.jpg` };
+      // Map IDs to specific image filenames
+      let imgName = id.split('_')[0];
+      if (id === 'football_5v5') imgName = 'football5';
+      if (id === 'football_6v6') imgName = 'football6';
+      if (id === 'multipurpose') imgName = 'multi';
+      
+      return {
+        id,
+        name: f.name,
+        sport: f.sport,
+        description: FIELD_DESC[f.sport] || 'ملعب مجهز بالكامل بأفضل المواصفات.',
+        image: `assets/fields/${imgName}.jpg`
+      };
     });
 
-    let currentUser = null;
-
+    // ── Check Auth ──
     document.addEventListener('DOMContentLoaded', async () => {
-      AuthManager.onAuthStateChanged(user => {
-        if (!user) { window.location.href = 'index.html'; return; }
-        currentUser = user;
-        const b = document.getElementById('headerUserBadge');
-        if (b) {
-          b.style.display = 'flex';
-          document.getElementById('navUserName').textContent = user.name;
-          document.getElementById('navUserId').textContent = user.uid;
-        }
-        init();
+      const user = AuthManager.getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Update header identity
+      const badge = document.getElementById('headerUserBadge');
+      if (badge) {
+        badge.style.display = 'flex';
+        document.getElementById('navUserName').textContent = user.name;
+        document.getElementById('navUserId').textContent = user.uid;
+      }
+
+      // Update quota display
+      updateQuotaDisplay(user);
+
+      // Render stadium cards
+      renderStadiums();
+
+      // Hide overlay
+      document.getElementById('loadingOverlay').style.display = 'none';
+
+      // Menu toggle
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        document.getElementById('mainNav').classList.toggle('open');
+      });
+
+      // Logout
+      document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        AuthManager.logout();
+        window.location.href = 'index.html';
       });
     });
 
-    async function init() {
-      const loader = document.getElementById('loadingOverlay');
-      loader.classList.add('active');
-      await updateQuota();
-      renderStadiums();
-      setupHandlers();
-      loader.classList.remove('active');
-    }
+    async function updateQuotaDisplay(user) {
+      const quotaLabel = document.getElementById('quotaLabel');
+      const quotaText = document.getElementById('quotaText');
+      const quotaFill = document.getElementById('quotaFill');
 
-    async function updateQuota() {
-      const qL = document.getElementById('quotaLabel'), qT = document.getElementById('quotaText'), qF = document.getElementById('quotaFill');
-      const limit = AuthManager.getDailyLimit(currentUser.role);
-      let used = 0;
-      try { used = await BookingEngine.getUsedHoursOnDate(currentUser.uid, Utils.today()); } catch {}
+      let maxHours = AuthManager.getDailyLimit(user.role);
+      let usedHours = 0;
       
-      if (limit === Infinity) { qL.textContent = 'حساب غير محدود'; qT.textContent = '∞'; qF.style.width = '0%'; return; }
-      qL.textContent = currentUser.role === 'tournament' ? 'حصة لاعب البطولات (3س/يوم)' : 'الحصة اليومية المتبقية';
-      qT.textContent = `${used}/${limit} ساعة`;
-      qF.style.width = (used / limit * 100) + '%';
-      qF.className = used >= limit ? 'quota-bar-fill full' : (used/limit >= 0.7 ? 'quota-bar-fill warning' : 'quota-bar-fill');
+      try {
+        usedHours = await BookingEngine.getUsedHoursOnDate(user.uid, Utils.today());
+      } catch(e) { usedHours = 0; }
+
+      if (maxHours === Infinity) {
+        quotaLabel.textContent = 'حساب غير محدود';
+        quotaText.textContent = '∞';
+        quotaFill.style.width = '0%';
+        quotaFill.className = 'quota-bar-fill';
+        return;
+      }
+      
+      if (user.role === 'tournament') {
+        quotaLabel.textContent = 'حصة لاعب البطولات (3 ساعات/يوم)';
+      } else {
+        quotaLabel.textContent = 'الحصة اليومية المتبقية';
+      }
+      
+      if (usedHours >= maxHours) {
+        quotaText.textContent = `تم استهلاك الحصة لهذا اليوم (${usedHours}/${maxHours})`;
+        quotaFill.style.width = '100%';
+        quotaFill.className = 'quota-bar-fill full';
+      } else {
+        quotaText.textContent = `${usedHours}/${maxHours} ساعة`;
+        const pct = (usedHours / maxHours) * 100;
+        quotaFill.style.width = pct + '%';
+        quotaFill.className = pct >= 70 ? 'quota-bar-fill warning' : 'quota-bar-fill';
+      }
     }
 
     function renderStadiums() {
       const grid = document.getElementById('stadiumsGrid');
-      grid.innerHTML = ALL_FIELDS.map(f => `
+      grid.innerHTML = ALL_FIELDS.map(field => `
         <div class="stadium-card">
-          <div class="card-img-wrapper"><img class="card-img" src="${f.image}" onerror="this.src='assets/fields/placeholder.jpg'"></div>
+          <div class="card-img-wrapper">
+            <img class="card-img" src="${field.image}" alt="${field.name}" 
+                 onerror="this.src='assets/fields/placeholder.jpg'">
+          </div>
           <div class="card-body">
-            <h3 class="card-title">${f.name}</h3>
-            <p class="card-text">${f.description}</p>
-            <button class="btn btn-primary btn-block" onclick="bookField('${f.id}')">احجز الآن</button>
+            <h3 class="card-title">${field.name}</h3>
+            <p class="card-text">${field.description}</p>
+            <button class="btn btn-primary btn-block" onclick="bookField('${field.id}')">
+              احجز الآن
+            </button>
           </div>
         </div>
       `).join('');
     }
 
-    function bookField(id) { window.location.href = `booking.html?field=${id}`; }
-    function setupHandlers() {
-      document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('mainNav').classList.toggle('open'));
-      document.getElementById('logoutBtn')?.addEventListener('click', (e) => { e.preventDefault(); AuthManager.logout(); window.location.href='index.html'; });
+    function bookField(fieldId) {
+      window.location.href = `booking.html?field=${fieldId}`;
     }
   </script>
 </body>
